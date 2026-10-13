@@ -1399,7 +1399,7 @@ function renderCountryChart(){
    <circle cx="90" cy="90" r="42" fill="white"></circle>
    <g class="pie-hole"><text id="countryPct" x="90" y="95" text-anchor="middle" class="strong">${defaultSeg.pct}%</text></g>
   </svg></div>
-  <div class="peoples-stat" aria-label="23 nombres distintos de pueblos indígenas identificados"><strong>23</strong><span>pueblos indígenas identificados*</span></div>
+  <div class="peoples-stat" aria-label="23 nombres distintos de pueblos indígenas identificados"><strong>23</strong><span>pueblos indígenas identificados</span></div>
   <div class="country-legend">${segments.map((seg,i)=>`<button type="button" class="country-item" data-index="${i}"><span class="country-dot" style="background:${seg.color}"></span><span class="country-name">${esc(seg.country)}</span></button>`).join('')}</div>`;
  const pctEl=document.getElementById('countryPct'),nameEl=document.getElementById('countryName');
  const showPaís=seg=>{pctEl.textContent=`${seg.pct}%`;nameEl.textContent=seg.country;};
