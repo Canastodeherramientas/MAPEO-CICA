@@ -1,0 +1,1554 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa de acciones de organizaciones — CICA</title>
+<style>
+ :root{
+  --blue:#178ABD;
+  --blue-dark:#1F6F88;
+  --teal:#2B6166;
+  --terracotta:#933C28;
+  --terracotta2:#BA634B;
+  --yellow:#F3DD7E;
+  --ochre:#D3A67B;
+  --cream:#F6EEB2;
+  --ink:#263425;
+  --muted:#6D6653;
+  --line:#DED3B8;
+  --bg:#FBF8EF;
+  --white:#FFFFFF;
+  --accent:#F3DD7E;
+  --sea:#E7F0F1;
+  --map:#D7E5E6;
+  --map-active:#933C28;
+  --map-data:#F3DD7E;
+  --map-stroke:#2B6166;
+  --shadow:0 8px 24px rgba(38,52,37,.09);
+}
+*{box-sizing:border-box;min-width:0}
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select{font:inherit}
+.header{background:linear-gradient(135deg,var(--teal),var(--blue));border-top:5px solid var(--terracotta);color:white;padding:24px 32px 22px}
+.header-inner{max-width:1450px;margin:auto;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);align-items:center;gap:12px 28px}.header-brand{min-width:0}.cica-logo{width:108px;height:108px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 5px 12px rgba(0,0,0,.16))}
+.kicker{font-size:22px;line-height:1.2;letter-spacing:.035em;text-transform:uppercase;color:var(--yellow);font-weight:800;opacity:.98}
+h1{margin:5px 0 6px;font-size:30px;font-weight:780;letter-spacing:-.02em}
+.header h1{margin:0}.subtitle{grid-column:1/-1;opacity:.94;max-width:1100px;font-size:14px;line-height:1.55}
+.wrap{width:100%;max-width:none;margin:18px auto;padding:0 10px}
+.grid{display:grid;grid-template-columns:270px minmax(0,1fr);gap:18px}
+.panel,.card{background:var(--white);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.sidebar{padding:18px;position:sticky;top:15px;height:max-content}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:14px 0 6px}
+input,select{width:100%;padding:10px 11px;border:1px solid #d5cedc;border-radius:9px;background:white;color:var(--ink);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:18px}
+.stat{padding:18px 20px;background:white;border:1px solid var(--line);border-radius:12px}
+.stat b{display:block;font-size:23px;color:var(--blue)}
+.stat span{font-size:11px;color:var(--muted)}
+
+.map-card{padding:18px;margin-bottom:16px}
+.map-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:10px}
+.map-head h2{margin:0;font-size:18px}
+.map-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.map-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(250px,.75fr);gap:18px;align-items:stretch}
+.map-stage{position:relative;background:linear-gradient(135deg,#f5f7fa,#edf1f6);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:390px}
+.map-svg{width:100%;height:390px;display:block}
+.map-country{fill:var(--map);stroke:white;stroke-width:2.2;cursor:pointer;transition:.18s}
+.map-country:hover,.map-country:focus{fill:#B8D5D8;outline:none}
+.map-country.active{fill:var(--terracotta)}
+.map-country.has-data{fill:var(--yellow)}
+.map-country.has-data.active{fill:var(--terracotta)}
+.map-label-leader{stroke:#64748b;stroke-width:1;fill:none;opacity:.8}
+.map-label{font-size:12px;font-weight:750;fill:var(--ink);pointer-events:none}
+.map-count{font-size:10px;font-weight:750;fill:var(--ink);pointer-events:none}
+.map-info{border:1px solid var(--line);border-radius:12px;background:#fbfafc;padding:16px;display:flex;flex-direction:column;justify-content:center}
+.map-info h3{margin:0 0 5px;color:var(--teal);font-size:17px}
+.map-info p{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.5}
+.map-orgs{display:flex;flex-direction:column;gap:7px}
+.map-org{border:1px solid var(--line);border-radius:8px;background:#fff;padding:8px 10px;font-size:11px}
+.map-org strong{display:block;font-size:12px}
+.map-org span{color:var(--muted)}
+.map-empty{color:var(--muted);font-size:12px;padding:12px 0}
+.map-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--muted)}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:3px;background:var(--map)}
+.legend-dot.data{background:var(--yellow)}
+.legend-dot.active{background:var(--terracotta)}
+
+.action-overview{padding:18px;margin-bottom:16px}
+.action-overview-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:14px}
+.action-overview-head h2{margin:0;font-size:18px}
+.action-overview-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.action-overview-grid{display:block}.overview-panel-wide{width:100%}.action-columns{display:grid;grid-template-columns:1fr 1fr;gap:18px}.action-column{min-width:0}
+.overview-panel{border:1px solid var(--line);border-radius:11px;padding:14px;background:#fbfafc}
+.overview-panel h3{margin:0 0 4px;font-size:14px;color:var(--teal)}
+.overview-panel p{margin:0 0 12px;color:var(--muted);font-size:11px}
+.action-rank,.org-rank{display:flex;align-items:center;gap:9px;margin:8px 0}
+.rank-label{font-size:11px;line-height:1.25;flex:0 0 205px;max-width:205px}
+.rank-bar-wrap{height:8px;background:#eeeaf2;border-radius:99px;overflow:hidden;flex:1;min-width:45px}
+.rank-bar{height:100%;background:var(--blue);border-radius:99px}
+.rank-value{font-size:11px;font-weight:750;color:var(--teal);width:24px;text-align:right}
+.action-rank{cursor:pointer;border-radius:7px;padding:3px 4px;margin-left:-4px;margin-right:-4px;border:0;background:transparent;width:100%;text-align:left}
+.action-rank:hover{background:var(--lavender)}
+.action-rank:focus{outline:2px solid var(--blue);outline-offset:1px}
+.org-rank{cursor:pointer;border-radius:7px;padding:3px 4px;margin-left:-4px;margin-right:-4px}
+.org-rank:hover{background:var(--lavender)}
+.org-rank:focus{outline:2px solid var(--blue);outline-offset:1px}
+.org-rank .rank-label{flex-basis:185px;max-width:185px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.overview-foot{margin-top:10px;font-size:10px;color:var(--muted)}
+
+.timeline-card{padding:18px;margin-bottom:16px}
+.timeline-head h2{margin:0;font-size:18px}
+.timeline-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.timeline{position:relative;margin:22px 8px 6px;padding:34px 0 18px;overflow:visible}
+.timeline-track{position:absolute;left:0;right:0;top:68px;height:2px;background:#d8d0df}
+.timeline-years{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));justify-content:stretch;gap:14px;min-width:0;position:relative}
+.timeline-year{position:relative;min-width:0;text-align:center}
+.timeline-year-label{font-size:12px;font-weight:750;color:var(--teal);margin-bottom:18px}
+.timeline-dot{position:relative;margin:0 auto;width:14px;height:14px;border-radius:50%;background:var(--terracotta);border:3px solid white;box-shadow:0 0 0 2px #c2b5d2;cursor:pointer;z-index:2}
+.timeline-orgs{margin-top:12px;display:flex;flex-direction:column;gap:5px;align-items:center}
+.timeline-org{border:1px solid var(--line);background:#FFFFFF;border-radius:8px;padding:6px 8px;font-size:10px;line-height:1.25;width:100%;max-width:190px;cursor:pointer;color:var(--ink);overflow-wrap:anywhere}
+.timeline-org:hover{background:var(--lavender);border-color:#cfc2df}
+.timeline-org:focus{outline:2px solid var(--blue);outline-offset:2px}
+
+.profile{padding:20px}
+.profile-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:15px}
+.org-name{font-size:23px;font-weight:750;margin-bottom:8px}
+.badges{display:flex;flex-wrap:wrap;gap:7px}
+.badge{background:var(--lavender);color:var(--teal);border:1px solid #d8cee5;padding:5px 9px;border-radius:99px;font-size:11px}
+.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.meta-item{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fbfafc}
+.meta-item small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.meta-item strong{font-size:13px}
+.theme{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.theme-title{padding:13px 15px;background:#f7f4fa;font-weight:750;font-size:15px;color:var(--teal)}
+.qblock{padding:15px;border-top:1px solid var(--line)}
+.qtitle{font-size:13px;font-weight:750;margin-bottom:10px}
+.actions{display:flex;flex-wrap:wrap;gap:7px}
+.action{font-size:12px;border:1px solid var(--line);padding:7px 9px;border-radius:8px;background:#fff}
+.action.yes{background:var(--lavender);border-color:#d7cbe5;color:#2B6166;font-weight:650}
+.action.no{color:#a0a0a6;background:#fafafa}
+.other{margin-top:9px;font-size:12px;color:#5b5962;background:#faf9fb;border-left:3px solid #cbb9d8;padding:8px 10px}
+.empty{padding:45px 20px;text-align:center;color:var(--muted)}
+.directory{margin-top:18px;padding:18px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-bottom:12px}
+.section-head h2{margin:0;font-size:18px}
+.section-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.action-select{max-width:520px}
+.org-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.org-result{padding:10px 12px;border:1px solid var(--line);border-radius:9px;display:flex;justify-content:space-between;gap:10px}
+.org-result strong{font-size:12px}.org-result span{font-size:11px;color:var(--muted)}
+
+.country-card{padding:14px 18px;margin-bottom:16px}
+.country-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:8px}
+.country-head h2{margin:0;font-size:18px}
+.country-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.country-content{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.pie-wrap{display:flex;justify-content:center;align-items:center;flex:0 0 150px}
+.pie-chart{width:150px;height:150px;display:block;overflow:visible}
+.pie-segment{cursor:pointer;transition:opacity .15s}
+.pie-segment:hover{opacity:.82}
+.pie-hole{pointer-events:none}
+.pie-hole .strong{font-size:20px;fill:var(--teal);font-weight:750}
+.pie-hole text:not(.strong){fill:var(--muted);font-size:11px}
+.country-legend{display:flex;flex-wrap:wrap;gap:6px 14px;flex:1;min-width:240px}
+.peoples-stat{display:flex;flex-direction:column;justify-content:center;align-items:center;flex:0 0 138px;min-height:138px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#f7f4fa;text-align:center}
+.peoples-stat strong{font-size:48px;line-height:1;color:var(--teal);font-weight:800}
+.peoples-stat span{margin-top:8px;font-size:12px;line-height:1.35;color:var(--ink);font-weight:650}
+.map-org{cursor:pointer;transition:border-color .15s,background .15s}
+.map-org:hover,.map-org:focus{border-color:var(--teal);background:#f7f4fa;outline:none}
+.map-org .peoples-detail{display:block;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);color:var(--ink);line-height:1.5;white-space:normal}
+.map-org .peoples-detail ol{margin:6px 0 0;padding-left:22px}
+.map-org .peoples-detail li{padding:1px 0}
+.country-item{display:flex;align-items:center;gap:7px;font-size:12px;border:0;background:transparent;padding:4px 0;cursor:pointer;color:var(--ink)}
+.country-item:hover .country-name,.country-item:focus .country-name{text-decoration:underline}
+.country-dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.country-name{color:var(--ink)}
+.note{margin-top:14px;font-size:11px;color:var(--muted);line-height:1.5}
+.footer{max-width:1450px;margin:15px auto 0;padding:0 22px;color:#7a747d;font-size:11px}
+@media(max-width:1050px){.map-layout{grid-template-columns:1fr}.action-columns{grid-template-columns:1fr}.rank-label{flex-basis:260px;max-width:260px}}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.sidebar{position:static}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.meta{grid-template-columns:repeat(2,minmax(0,1fr))}.org-list{grid-template-columns:1fr}.timeline{padding-top:10px}.timeline-track{display:none}.timeline-years{grid-template-columns:repeat(auto-fit,minmax(125px,1fr));min-width:0;gap:14px}}
+@media(max-width:560px){.wrap{padding:0 8px}.header{padding:22px 18px}.stats{grid-template-columns:1fr 1fr}.meta{grid-template-columns:1fr}.action-columns{grid-template-columns:1fr}.section-head,.country-head{align-items:stretch;flex-direction:column}.action-select{max-width:none}.timeline-years{grid-template-columns:repeat(2,minmax(0,1fr))}.map-svg{height:330px}.map-stage{min-height:330px}}
+@media(max-width:700px){.header-inner{grid-template-columns:1fr;gap:10px}.kicker{font-size:19px}.header h1{font-size:25px}.subtitle{grid-column:1;font-size:13px}}
+@media(max-width:560px){.header-inner{align-items:flex-start}.cica-logo{width:76px;height:76px}}
+
+/* CICA: selector superior y contenido a ancho completo */
+.grid{display:block}
+.org-selector-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:22px;
+  padding:14px 18px;
+  margin-bottom:16px;
+}
+.org-selector-copy{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  min-width:0;
+}
+.org-selector-copy strong{
+  font-size:14px;
+  color:var(--teal);
+}
+.org-selector-copy span{
+  font-size:11px;
+  color:var(--muted);
+}
+.org-selector-bar select{
+  width:min(520px,45%);
+  min-height:42px;
+  border:1px solid var(--terracotta2);
+  border-radius:10px;
+  background:#fff;
+  color:var(--ink);
+  font-weight:650;
+  padding:10px 12px;
+  cursor:pointer;
+}
+.org-selector-bar select:focus{
+  outline:2px solid var(--yellow);
+  outline-offset:2px;
+}
+@media(max-width:700px){
+  .org-selector-bar{flex-direction:column;align-items:stretch}
+  .org-selector-bar select{width:100%}
+}
+
+
+/* ===== RED DE OPORTUNIDADES DE ARTICULACIÓN ===== */
+.network-card{padding:18px;margin-bottom:16px}
+.network-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:14px}
+.network-head h2{margin:0;font-size:18px;color:var(--ink)}
+.network-head p{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.5;max-width:850px}
+.network-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.network-filter{min-width:210px;width:auto;padding:8px 10px;font-size:12px}
+.network-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(520px,1.15fr);gap:18px;align-items:stretch}
+.network-stage{position:relative;min-height:850px;border:1px solid var(--line);border-radius:12px;background:radial-gradient(circle at 50% 50%,#fffdf7 0%,#f7f3e8 70%,#f0eadb 100%);overflow:hidden}
+.network-svg{width:100%;height:850px;display:block}
+.network-edge{stroke:#B9B0A0;stroke-width:5;opacity:.62;cursor:pointer;transition:.18s;pointer-events:stroke}
+.network-edge-hit{stroke:transparent;stroke-width:28;fill:none;cursor:pointer;pointer-events:stroke}
+.network-edge.high{stroke:var(--terracotta);stroke-width:7;opacity:.9}
+.network-edge.medium{stroke:var(--blue);stroke-width:6;opacity:.8}
+.network-edge.shared{stroke:var(--teal);stroke-width:5;opacity:.72}
+.network-edge.active{stroke:var(--yellow);stroke-width:10;opacity:1}
+.network-node{cursor:pointer;transition:.18s}
+.network-node circle{fill:#fff;stroke:var(--teal);stroke-width:5;filter:drop-shadow(0 4px 7px rgba(38,52,37,.14))}
+.network-node text{font-size:18px;font-weight:780;fill:var(--ink);pointer-events:none}
+.network-node .node-country{font-size:11px;font-weight:500;fill:var(--muted)}
+.network-node.active circle{stroke:var(--terracotta);stroke-width:5}
+.network-node.active-pair circle{fill:var(--yellow);stroke:var(--terracotta);stroke-width:7;filter:drop-shadow(0 5px 10px rgba(38,52,37,.24))}
+.network-node.active-pair text{font-size:20px;font-weight:850;fill:var(--ink)}
+.network-node.dim-pair{opacity:.28}
+.network-node.dim{opacity:.25}
+.network-edge.dim{opacity:.08}
+.network-edge-hit.dim{opacity:0}
+.network-edge-label{font-size:10px;font-weight:750;fill:var(--teal);pointer-events:none}
+.network-empty{height:100%;min-height:460px;display:flex;align-items:center;justify-content:center;padding:30px;text-align:center;color:var(--muted);font-size:12px;line-height:1.6}
+.network-info{border:1px solid var(--line);border-radius:12px;background:#fffdfa;padding:16px;min-height:360px}
+.network-info h3{margin:0 0 5px;font-size:16px;color:var(--teal)}
+.network-info .network-pair{font-size:12px;color:var(--muted);margin-bottom:13px;line-height:1.5}
+.network-score{display:flex;align-items:center;gap:9px;margin:8px 0 14px;padding:10px 11px;background:#f7f2e5;border-radius:10px;border:1px solid var(--line)}
+.network-score strong{font-size:14px;color:var(--terracotta);background:#fff;border:1px solid var(--terracotta2);border-radius:999px;padding:7px 10px;white-space:nowrap}
+.network-score span{font-size:11px;color:var(--muted);line-height:1.35}
+.network-section{border-top:1px solid var(--line);padding-top:11px;margin-top:12px}
+.network-section h4{margin:0 0 7px;font-size:12px;color:var(--teal)}
+.network-tags{display:flex;flex-wrap:wrap;gap:6px}
+.network-tag{font-size:10px;line-height:1.3;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff}
+.network-tag.complement{background:#fff4ec;border-color:#e6c4b7;color:#7e3827}
+.network-tag.shared{background:#eef7f5;border-color:#bfded8;color:#2B6166}
+.network-collab{margin:7px 0 0;padding-left:18px;color:var(--ink);font-size:11px;line-height:1.5}
+.network-direction{margin:10px 0 12px;padding:10px 12px;border:1px solid rgba(44,92,111,.14);border-radius:12px;background:#fffdf9}.network-direction-detail{margin:8px 0;padding:9px 10px;border:1px solid rgba(44,92,111,.11);border-radius:10px;background:#fff}.network-direction-theme{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#31596a;margin-bottom:5px}.network-direction-detail .network-collab{margin:0;padding-left:18px}.network-direction-detail .network-collab li{margin:5px 0}.network-direction-detail .network-collab li span{font-size:12px;line-height:1.45;color:#5d6870}.network-direction h5{margin:0 0 6px;font-size:12px;letter-spacing:.02em;text-transform:uppercase;color:#31596a}.shared-direction{background:#f4faf7;border-color:rgba(58,116,96,.18)}
+.network-metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px}.network-metric{border:1px solid rgba(20,50,70,.12);border-radius:14px;padding:12px;background:#fff}.network-metric strong{display:block;font-size:1.15rem}.network-metric span{display:block;font-size:.78rem;line-height:1.3;margin-top:4px;color:#52616b}.network-metric-grid + .network-note{margin-top:10px}
+.network-note{margin-top:12px;padding:10px 11px;border-left:3px solid var(--yellow);background:#fbf7df;color:var(--muted);font-size:10px;line-height:1.5}
+.network-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:10px}
+.network-legend span{display:flex;align-items:center;gap:6px}
+.network-line{width:25px;height:3px;border-radius:99px;background:var(--terracotta)}
+.network-line.medium{background:var(--blue)}
+.network-line.shared{background:var(--teal)}
+.network-dot{width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--teal)}
+@media(max-width:900px){.network-layout{grid-template-columns:1fr}.network-info{min-height:auto}.network-stage{min-height:470px}.network-svg{height:470px}.network-empty{min-height:470px}}
+@media(max-width:560px){.network-head{align-items:stretch;flex-direction:column}.network-filter{width:100%}.network-stage{min-height:380px}.network-svg{height:380px}.network-empty{min-height:380px}.network-info{padding:13px}}
+
+</style>
+</head>
+<body>
+<header class="header">
+ <div class="header-inner">
+  <div class="header-brand"><div class="kicker">CONSEJO INDÍGENA DE CENTRO AMÉRICA</div></div>
+  <h1>Mapa de acciones de organizaciones</h1>
+  <div class="subtitle">Explora las organizaciones vinculadas al CICA, su alcance territorial, sus características organizativas y las acciones que realizan. Este tablero está preparado para Centroamérica y conserva la estructura analítica del instrumento de mapeo.</div>
+ </div>
+</header>
+
+<div class="wrap">
+ <div class="grid">
+  <main>
+ 
+   <div class="card org-selector-bar">
+    <div class="org-selector-copy">
+     <strong>Seleccionar organización</strong>
+     <span>Consulta el perfil y la información registrada de cada organización.</span>
+    </div>
+    <select id="org" onchange="renderProfile()" aria-label="Seleccionar organización"></select>
+   </div>
+   <div id="stats" class="stats"></div>
+
+   <div class="card map-card">
+    <div class="map-head">
+     <div><h2>Centroamérica</h2><p>Selecciona un país para consultar las organizaciones actualmente representadas en el mapeo del CICA.</p></div>
+    </div>
+    <div class="map-layout">
+     <div class="map-stage">
+      <svg class="map-svg" viewBox="0 0 900 420" role="img" aria-label="Mapa geográfico interactivo de Centroamérica con fronteras nacionales">
+       <rect x="0" y="0" width="900" height="420" fill="#eef2f6"/>
+       <!-- Mapa geográfico de Centroamérica: cada país conserva su interacción. -->
+       <g id="centralAmericaMap">
+        <!-- Fronteras nacionales basadas en geometrías cartográficas Natural Earth (escala regional). -->
+        <path class="map-country" data-country="Guatemala" d="M 239.5 161.8 L 240.2 153.1 L 243.6 146.1 L 239.4 140.5 L 253.5 116.0 L 291.0 115.9 L 291.7 105.7 L 287.0 103.9 L 283.8 97.4 L 273.0 90.4 L 262.1 80.4 L 275.3 80.4 L 275.3 63.5 L 302.6 63.4 L 329.6 63.8 L 329.4 87.5 L 327.1 121.4 L 335.8 121.4 L 345.4 126.8 L 347.9 122.3 L 356.5 126.2 L 343.1 137.6 L 329.3 146.0 L 327.2 151.8 L 329.6 157.7 L 323.5 165.3 L 316.6 167.1 L 318.2 170.7 L 312.7 174.0 L 302.7 181.5 L 301.8 185.9 L 286.8 180.7 L 268.6 180.2 L 255.2 174.2 L 239.5 161.8 Z" tabindex="0" role="button" aria-label="Seleccionar Guatemala"/>
+        <path class="map-country" data-country="Belice" d="M 329.6 63.8 L 329.4 59.3 L 332.9 58.0 L 338.2 61.5 L 348.7 43.4 L 354.3 43.0 L 354.4 47.4 L 359.9 47.5 L 359.4 55.7 L 354.7 68.7 L 357.3 73.3 L 354.2 84.0 L 356.0 86.9 L 352.6 102.1 L 346.9 110.0 L 341.6 111.0 L 335.8 121.4 L 327.1 121.4 L 329.4 87.5 L 329.6 63.8 Z" tabindex="0" role="button" aria-label="Seleccionar Belice"/>
+        <path class="map-country" data-country="Honduras" d="M 504.9 148.1 L 494.9 147.5 L 490.8 151.6 L 480.7 155.5 L 473.3 155.5 L 466.8 159.4 L 461.0 158.0 L 456.0 153.4 L 452.9 154.3 L 449.2 161.5 L 446.4 161.2 L 445.9 167.4 L 435.7 175.6 L 430.3 179.2 L 427.3 182.9 L 418.7 176.9 L 412.4 184.9 L 406.3 184.6 L 399.4 185.4 L 400.0 200.1 L 395.8 200.4 L 392.1 207.2 L 383.0 208.5 L 378.0 199.1 L 369.1 196.5 L 371.1 184.4 L 367.1 181.2 L 361.1 179.1 L 348.3 182.6 L 347.2 178.6 L 338.4 173.8 L 332.1 167.8 L 323.5 165.3 L 329.6 157.7 L 327.2 151.8 L 329.3 146.0 L 343.1 137.6 L 356.5 126.2 L 359.5 127.3 L 365.9 122.1 L 374.3 121.6 L 377.0 124.1 L 381.5 122.6 L 395.1 125.3 L 408.6 124.5 L 418.0 121.2 L 421.4 117.8 L 430.8 119.4 L 437.8 121.4 L 445.4 120.7 L 451.2 118.1 L 464.6 122.3 L 469.2 122.9 L 478.1 128.6 L 486.6 135.3 L 497.2 139.9 L 504.9 148.1 Z" tabindex="0" role="button" aria-label="Seleccionar Honduras"/>
+        <path class="map-country" data-country="El Salvador" d="M 323.5 165.3 L 332.1 167.8 L 338.4 173.8 L 347.2 178.6 L 348.3 182.6 L 361.1 179.1 L 367.1 181.2 L 371.1 184.4 L 369.1 196.5 L 365.8 203.5 L 348.9 203.1 L 338.4 200.2 L 326.3 194.2 L 310.1 192.4 L 301.8 185.9 L 302.7 181.5 L 312.7 174.0 L 318.2 170.7 L 316.6 167.1 L 323.5 165.3 Z" tabindex="0" role="button" aria-label="Seleccionar El Salvador"/>
+        <path class="map-country" data-country="Nicaragua" d="M 490.0 269.8 L 483.0 276.2 L 474.4 274.2 L 469.6 268.0 L 460.3 265.5 L 453.6 269.4 L 434.3 261.5 L 429.9 265.3 L 419.8 255.9 L 406.1 243.8 L 399.7 233.7 L 387.4 224.3 L 372.7 210.7 L 376.0 206.1 L 380.8 210.6 L 383.0 208.5 L 392.1 207.2 L 395.8 200.4 L 400.0 200.1 L 399.4 185.4 L 406.3 184.6 L 412.4 184.9 L 418.7 176.9 L 427.3 182.9 L 430.3 179.2 L 435.7 175.6 L 445.9 167.4 L 446.4 161.2 L 449.2 161.5 L 452.9 154.3 L 456.0 153.4 L 461.0 158.0 L 466.8 159.4 L 473.3 155.5 L 480.7 155.5 L 490.8 151.6 L 494.9 147.5 L 504.9 148.1 L 502.4 151.0 L 500.9 157.7 L 503.9 168.7 L 497.1 178.9 L 494.0 191.0 L 493.1 204.2 L 494.6 211.9 L 495.4 225.4 L 490.9 228.4 L 488.2 241.2 L 490.2 249.1 L 484.2 256.8 L 485.5 264.9 L 490.0 269.8 Z" tabindex="0" role="button" aria-label="Seleccionar Nicaragua"/>
+        <path class="map-country" data-country="Costa Rica" d="M 522.5 311.0 L 511.2 313.7 L 511.3 325.8 L 517.4 330.2 L 513.0 333.8 L 514.2 339.2 L 511.7 345.3 L 510.2 351.2 L 494.3 344.6 L 488.4 338.3 L 491.8 333.1 L 490.7 326.5 L 482.6 319.3 L 471.1 313.4 L 461.0 309.5 L 459.1 300.8 L 451.4 295.4 L 453.3 304.1 L 447.5 311.3 L 440.8 303.0 L 431.4 300.0 L 427.4 294.0 L 427.6 284.8 L 431.5 275.4 L 423.2 271.1 L 429.9 265.3 L 434.3 261.5 L 453.6 269.4 L 460.3 265.5 L 469.6 268.0 L 474.4 274.2 L 483.0 276.2 L 490.0 269.8 L 497.4 286.1 L 508.7 298.2 L 522.5 311.0 Z" tabindex="0" role="button" aria-label="Seleccionar Costa Rica"/>
+        <path class="map-country" data-country="Panamá" d="M 674.3 337.9 L 670.7 342.3 L 677.5 359.9 L 672.0 368.9 L 662.6 366.7 L 658.8 381.3 L 649.1 372.6 L 642.8 356.4 L 650.0 348.4 L 642.6 346.4 L 637.2 336.5 L 622.6 328.1 L 609.8 330.0 L 603.9 340.5 L 592.1 348.0 L 585.7 349.0 L 582.8 355.3 L 596.8 371.6 L 588.8 375.4 L 584.6 379.9 L 571.0 381.4 L 565.9 363.5 L 562.1 368.6 L 552.5 366.8 L 546.6 354.7 L 534.6 352.7 L 527.0 349.2 L 514.5 349.3 L 513.5 355.8 L 510.2 351.2 L 511.7 345.3 L 514.2 339.2 L 513.0 333.8 L 517.4 330.2 L 511.3 325.8 L 511.2 313.7 L 522.5 311.0 L 533.0 321.8 L 532.4 328.1 L 544.0 329.5 L 546.8 327.0 L 554.8 334.4 L 569.2 332.2 L 581.6 324.7 L 599.4 318.6 L 609.4 309.7 L 625.5 311.4 L 624.4 314.4 L 640.7 315.4 L 653.7 320.6 L 663.3 329.6 L 674.3 337.9 Z" tabindex="0" role="button" aria-label="Seleccionar Panamá"/>
+        <text class="map-label" x="281.2" y="121.0">Guatemala</text>
+        <text class="map-label" x="366.4" y="76.0">Belice</text>
+        <text class="map-label" x="406.9" y="151.0">Honduras</text>
+        <path class="map-label-leader" d="M 342.6 187.0 L 296.0 217.5"/>
+        <text class="map-label" x="302.0" y="220.5">El Salvador</text>
+        <text class="map-label" x="436.1" y="217.0">Nicaragua</text>
+        <text class="map-label" x="485.0" y="307.0">Costa Rica</text>
+        <text class="map-label" x="591.0" y="334.0">Panamá</text>
+        <g id="mapCounts"></g>
+       </g>
+      </svg>
+     </div>
+     <div class="map-info">
+      <h3 id="mapInfoTitle">Centroamérica</h3>
+      <p id="mapInfoText">Selecciona un país en el mapa para consultar sus organizaciones.</p>
+      <div id="mapOrgs" class="map-orgs"></div>
+     </div>
+    </div>
+    <div class="map-legend">
+      <span class="legend-item"><span class="legend-dot"></span>Sin organizaciones registradas</span>
+      <span class="legend-item"><span class="legend-dot data"></span>País con organizaciones</span>
+      <span class="legend-item"><span class="legend-dot active"></span>País seleccionado</span>
+    </div>
+   </div>
+
+   <div class="card action-overview">
+    <div class="action-overview-head">
+     <div><h2>Resumen de acciones</h2><p>Consulta cuáles son las acciones reportadas con mayor frecuencia por las organizaciones.</p></div>
+    </div>
+    <div id="actionOverview" class="action-overview-grid"></div>
+   </div>
+
+   <div class="card timeline-card">
+    <div class="timeline-head">
+     <h2>Línea de tiempo de las organizaciones</h2>
+     <p>Año de creación declarado por cada organización en el instrumento de mapeo. Selecciona una organización para abrir su perfil.</p>
+    </div>
+    <div id="timeline" class="timeline"></div>
+   </div>
+
+   <div class="card country-card">
+    <div class="country-head">
+     <div><h2>Participación por país</h2><p>Distribución de las organizaciones incluidas en el tablero según el país reportado en el instrumento de mapeo.</p></div>
+    </div>
+    <div id="countryChart" class="country-content"></div>
+   </div>
+
+
+
+   <div class="card network-card" id="networkSection">
+    <div class="network-head">
+     <div>
+      <h2>Red de oportunidades de relación</h2>
+      <p>Esta red es una invitación a explorar los vínculos posibles entre las organizaciones que integran el CICA. A través de las conexiones, podrás descubrir acciones que las organizaciones reportan en común y otras que han sido reportadas por una organización, pero no por la otra. Estas diferencias permiten identificar posibles temas de interés para compartir experiencias, intercambiar conocimientos y explorar nuevas formas de colaboración. <strong>Haz clic sobre una conexión de la red para explorar la relación entre dos organizaciones, conocer las acciones que comparten y descubrir aquellas que pueden abrir nuevas conversaciones y oportunidades de aprendizaje mutuo.</strong> Cada conexión es un punto de partida para el diálogo y la construcción colectiva, desde las experiencias, los saberes y las trayectorias propias de cada organización.</p>
+     </div>
+    </div>
+    <div class="network-layout">
+     <div class="network-stage" id="networkStage"></div>
+     <div class="network-info" id="networkInfo">
+      <h3>Cómo leer esta red</h3>
+      <div class="network-pair">Cada círculo representa una organización. Las líneas representan una oportunidad potencial de articulación identificada a partir de los datos del mapeo.</div>
+      <div class="network-section"><h4>Qué puedes explorar</h4><ul class="network-collab"><li>Selecciona una línea para conocer qué acciones son diferentes entre ambas organizaciones.</li></ul></div>
+      <div class="network-note"><strong>Precaución metodológica:</strong> una acción no reportada no significa necesariamente que la organización no la realice. Las diferencias se presentan como posibles puntos de intercambio a partir de lo registrado en el instrumento.</div>
+     </div>
+    </div>
+    <div class="network-legend">
+      <span><i class="network-line"></i> Oportunidad de relación identificada por diferencias reportadas</span>
+      <span><i class="network-dot"></i> Organización</span>
+    </div>
+   </div>
+
+   <div id="profile" class="card profile"></div>
+
+   <div class="card directory">
+    <div class="section-head">
+     <div><h2>Organizaciones por acción</h2><p>Selecciona una acción para identificar rápidamente qué organizaciones la realizan.</p></div>
+     <select id="actionSelect" class="action-select" onchange="renderDirectory()"></select>
+    </div>
+    <div id="directory"></div>
+   </div>
+  </main>
+ </div>
+</div>
+
+<div class="footer">* 23 nombres distintos de pueblos indígenas identificados en las respuestas de CCNIS, CONPAH, MNICR y COONAPIP, descontando nombres repetidos entre organizaciones. La cifra corresponde a nombres distintos reportados, no necesariamente a una equivalencia etnográfica entre denominaciones. CICA · Consejo Indígena de Centro América · Mapa de acciones de organizaciones · Centroamérica</div>
+
+<script>
+const CENTRAL_AMERICA = ["Guatemala","Belice","Honduras","El Salvador","Nicaragua","Costa Rica","Panamá"];
+
+// Nombres incorporados únicamente al panel del mapa; no se agregan a la base analítica.
+const MAP_ONLY_ORGS = {
+  "Guatemala": ["Mesa nacional Maya de Guatemala (AJPU)"],
+  "Belice": ["Consejo Indígena nacional de Belice (BENIC)"],
+  "Nicaragua": ["Movimiento indígena de Nicaragua (MIN)"]
+};
+
+const DB = {
+  records: [{
+    org: "CCNIS",
+    shortName: "CCNIS",
+    country: "El Salvador",
+    scope: "Nacional",
+    type: "Consejo Indígena",
+    legal: "Organización indígena sin personería jurídica o certificación legal",
+    year: 1993,
+    registered: "No estamos interesados en registrarnos ni en obtener personería jurídica",
+    specificity: {
+      Women: 1,
+      "Research center": 0,
+      Youth: 1,
+      Otro: 1,
+      Otro_texto: "Pero se trabajan muchas otras áreas"
+    },
+    peoples: "3 pueblos indígenas: Lenca, Nahua, Kakawira",
+    impact: "33 organizaciones. ADEC OIN familia 5 por familia. Tiene base de datos. 5000 personas + 3000 indirectos.",
+    territory: "Ahuachapan, Sonsonate, Santa Ana, La Paz, Morazán, Cuscatlán, San Salvador, San Miguel; 2475 manzanas (sitios sagrados, uso de la tierra, relevancia cultural) 18.5 hec",
+    ecosystems: {
+      "Alta montaña / Altiplano": true,
+      "Bosques tropicales": false,
+      "Valles": true,
+      "Costas y manglares": true,
+      "Otras": false
+    },
+    access: {
+      "Sitio web": true,
+      "Redes sociales": true,
+      "Publicaciones (informes, investigaciones, boletines, revistas, libros)": true,
+      "No tenemos sitio web ni redes sociales": false,
+      "Otras": false
+    },
+    capacity: {
+      "Capacitación en administración, planificación y evaluación": true,
+      "Uso de herramientas para generación de datos": true,
+      "Construcción de capacidades en liderazgo y gestión de recursos": true,
+      "No, no hemos realizado ningún programa de fortalecimiento de capacidades para socios o comunidades.": false,
+      "Otras": false
+    },
+    fund: "No",
+    actions: {
+      P15: {
+        "Recuperación de tierras": true,
+        "Protección de tierras ancestrales y sitios sagrados": true,
+        "Vigilancia comunitaria y gobernanza territorial": true,
+        "Acción frente a megaproyectos extractivos": true
+      },
+      P16: {
+        "Implementación de estrategias frente al cambio climático": true,
+        "Mecanismos de conservación de la naturaleza y el ambiente": true,
+        "Planeación y posicionamiento en diálogos internacionales sobre temas ambientales": true,
+        "Integración del conocimiento indígena en estrategias de conservación y cambio climático": true
+      },
+      P17: {
+        "Protección y restauración de ecosistemas hídricos (humedales, páramos, cuencas) para asegurar agua y calidad.": true,
+        "Implementación de sistemas de captación, almacenamiento y uso eficiente del agua (cosecha de lluvia, reúso, riego tecnificado).": true,
+        "Monitoreo participativo de caudales, calidad del agua y eventos extremos (sequías, inundaciones) como adaptación climática.": true,
+        "Integración de saberes locales y ancestrales en el manejo sostenible del agua (manantiales, acuerdos comunitarios, prácticas tradicionales).": true
+      },
+      P18: {
+        "Proyectos productivos y empoderamiento económico sostenible": true,
+        "Fomento de sistemas agroecológicos y agricultura regenerativa": true,
+        "Rescate y conservación de semillas nativas y variedades locales": true,
+        "Fortalecimiento de mercados locales y formas de comercialización": true
+      },
+      P19: {
+        "Empoderamiento de mujeres mediante fortalecimiento de capacidades": true,
+        "Prevención de violencia de género": true,
+        "Participación en la toma de decisiones y defensa de los derechos de las mujeres": true,
+        "Reconocimiento del rol de la mujer desde los valores y prácticas tradicionales": true
+      },
+      P20: {
+        "Desarrollo de procesos educativos indígenas desde los valores y principios ancestrales": true,
+        "Recuperación de lenguas indígenas": true,
+        "Transmisión intergeneracional de saberes": true,
+        "Producción cultural y memoria histórica": true
+      },
+      P21: {
+        "Fortalecimiento de sistemas de salud tradicional y medicina ancestral": true,
+        "Formación y acompañamiento a parteras, sanadores o promotores de salud comunitaria": true,
+        "Acceso a servicios de salud intercultural y articulación con sistemas de salud oficiales": true,
+        "Soberanía sanitaria y prevención comunitaria": false
+      },
+      P22: {
+        "Diálogo y posicionamiento interinstitucional en espacios públicos, foros, con gobiernos, ONG o sector privado.": true,
+        "Generación de políticas, orientada a propuestas de leyes o participación en la toma de decisiones a nivel local, nacional o regional.": true,
+        "Participación en redes, alianzas, plataformas o movimientos colectivos, y coordinación con otras organizaciones para alcanzar objetivos comunes": true
+      },
+      P23: {
+        "Reivindicación de derechos de autodeterminación": true,
+        "Documentación de violaciones de derechos": true,
+        "Mecanismos de protección para defensores indígenas": false,
+        "Acceso a mecanismos internacionales": true
+      },
+      P24: {
+        "Capacitación en administración, planificación y evaluación": true,
+        "Uso de herramientas para generación de datos": true,
+        "Construcción de capacidades en liderazgo y gestión de recursos": true
+      }
+    }
+  }, {
+    org: "Confederación de Pueblos Autóctonos de Honduras (CONPAH)",
+    shortName: "CONPAH",
+    country: "Honduras",
+    scope: "Nacional",
+    type: "Asociación",
+    legal: "Organización Indígena",
+    year: 1992,
+    registered: "Sí tenemos registro, certificación o personería jurídica. Personería Jurídica 064-1994.",
+    specificity: {
+      Women: 0,
+      "Research center": 0,
+      Youth: 0,
+      Otro: 1,
+      Otro_texto: "Organización Mixta de los PIAH para la defensa de los derechos individuales y colectivos de los PI"
+    },
+    peoples: "Nueve (9) Pueblos Autóctonos: Tawahka, Pech, Tolupan, Maya-Chortí, Lenca, Miskitu, Nahua, Garífuna y Negros de Habla Inglés",
+    impact: "Aproximadamente 2.2 millones de personas pertenecientes a los pueblos indígenas y afrodescendientes de Honduras. Beneficiarios directos anuales: entre 50,000 personas.",
+    territory: "No se cuenta con un dato exacto, pero los territorios indígenas se protegen en su totalidad.",
+    ecosystems: {
+      "Alta montaña / Altiplano": true,
+      "Bosques tropicales": true,
+      "Valles": true,
+      "Costas y manglares": true,
+      "Otras": false
+    },
+    access: {
+      "Sitio web": false,
+      "Redes sociales": false,
+      "Publicaciones (informes, investigaciones, boletines, revistas, libros)": false,
+      "No tenemos sitio web ni redes sociales": true,
+      "Correo electrónico": true
+    },
+    capacity: {
+      "Capacitación en administración, planificación y evaluación": false,
+      "Uso de herramientas para generación de datos": false,
+      "Construcción de capacidades en liderazgo y gestión de recursos": true,
+      "No, no hemos realizado ningún programa de fortalecimiento de capacidades para socios o comunidades.": false,
+      "Otras": false
+    },
+    fund: "No",
+    actions: {
+      P15: {
+        "Recuperación de tierras": true,
+        "Protección de tierras ancestrales y sitios sagrados": true,
+        "Vigilancia comunitaria y gobernanza territorial": true,
+        "Acción frente a megaproyectos extractivos": true
+      },
+      P16: {
+        "Implementación de estrategias frente al cambio climático": true,
+        "Mecanismos de conservación de la naturaleza y el ambiente": true,
+        "Planeación y posicionamiento en diálogos internacionales sobre temas ambientales": false,
+        "Integración del conocimiento indígena en estrategias de conservación y cambio climático": true
+      },
+      P17: {
+        "Protección y restauración de ecosistemas hídricos (humedales, páramos, cuencas) para asegurar agua y calidad.": true,
+        "Implementación de sistemas de captación, almacenamiento y uso eficiente del agua (cosecha de lluvia, reúso, riego tecnificado).": true,
+        "Monitoreo participativo de caudales, calidad del agua y eventos extremos (sequías, inundaciones) como adaptación climática.": true,
+        "Integración de saberes locales y ancestrales en el manejo sostenible del agua (manantiales, acuerdos comunitarios, prácticas tradicionales).": true
+      },
+      P18: {
+        "Proyectos productivos y empoderamiento económico sostenible": true,
+        "Fomento de sistemas agroecológicos y agricultura regenerativa": false,
+        "Rescate y conservación de semillas nativas y variedades locales": true,
+        "Fortalecimiento de mercados locales y formas de comercialización": true
+      },
+      P19: {
+        "Empoderamiento de mujeres mediante fortalecimiento de capacidades": true,
+        "Prevención de violencia de género": true,
+        "Participación en la toma de decisiones y defensa de los derechos de las mujeres": true,
+        "Reconocimiento del rol de la mujer desde los valores y prácticas tradicionales": true
+      },
+      P20: {
+        "Desarrollo de procesos educativos indígenas desde los valores y principios ancestrales": true,
+        "Recuperación de lenguas indígenas": true,
+        "Transmisión intergeneracional de saberes": true,
+        "Producción cultural y memoria histórica": true
+      },
+      P21: {
+        "Fortalecimiento de sistemas de salud tradicional y medicina ancestral": true,
+        "Formación y acompañamiento a parteras, sanadores o promotores de salud comunitaria": false,
+        "Acceso a servicios de salud intercultural y articulación con sistemas de salud oficiales": false,
+        "Soberanía sanitaria y prevención comunitaria": false
+      },
+      P22: {
+        "Diálogo y posicionamiento interinstitucional en espacios públicos, foros, con gobiernos, ONG o sector privado.": true,
+        "Generación de políticas, orientada a propuestas de leyes o participación en la toma de decisiones a nivel local, nacional o regional.": true,
+        "Participación en redes, alianzas, plataformas o movimientos colectivos, y coordinación con otras organizaciones para alcanzar objetivos comunes": true
+      },
+      P23: {
+        "Reivindicación de derechos de autodeterminación": true,
+        "Documentación de violaciones de derechos": true,
+        "Mecanismos de protección para defensores indígenas": true,
+        "Acceso a mecanismos internacionales": true
+      },
+      P24: {
+        "Capacitación en administración, planificación y evaluación": false,
+        "Uso de herramientas para generación de datos": false,
+        "Construcción de capacidades en liderazgo y gestión de recursos": true
+      }
+    }
+  }, {
+    org: "Mesa Nacional Indígena de Costa Rica",
+    shortName: "MNICR",
+    country: "Costa Rica",
+    scope: "Nacional",
+    type: "Asociación",
+    legal: "Organización Indígena",
+    year: 1978,
+    registered: "Sí tenemos registro, certificación o personería jurídica",
+    specificity: {
+      Women: 0,
+      "Research center": 0,
+      Youth: 0,
+      Otro: 1,
+      Otro_texto: "Derechos de los Pueblos Indígenas"
+    },
+    peoples: "8 Pueblos Indígenas: Bribri, Brorán o Térraba, Brunka, Cabécar, Chorotega, Huetar, Malek y Ngäbe",
+    impact: "No se ha recolectado ese tipo de información.",
+    territory: "No se ha recolectado ese tipo de información.",
+    ecosystems: {
+      "Alta montaña / Altiplano": true,
+      "Bosques tropicales": true,
+      "Valles": false,
+      "Costas y manglares": false,
+      "Otras": true,
+      "Otras_texto": "Áreas deforestadas; áreas de producción alimenticia; áreas de uso cultural ancestral"
+    },
+    access: {
+      "Sitio web": false,
+      "Redes sociales": true,
+      "Publicaciones (informes, investigaciones, boletines, revistas, libros)": false,
+      "No tenemos sitio web ni redes sociales": false,
+      "Otras": true,
+      "Otras_texto": "Notas de la organización"
+    },
+    capacity: {
+      "Capacitación en administración, planificación y evaluación": true,
+      "Uso de herramientas para generación de datos": false,
+      "Construcción de capacidades en liderazgo y gestión de recursos": true,
+      "No, no hemos realizado ningún programa de fortalecimiento de capacidades para socios o comunidades.": false,
+      "Otras": false
+    },
+    fund: "Sí",
+    actions: {
+      P15: {
+        "Recuperación de tierras": true,
+        "Protección de tierras ancestrales y sitios sagrados": true,
+        "Vigilancia comunitaria y gobernanza territorial": true,
+        "Acción frente a megaproyectos extractivos": true
+      },
+      P16: {
+        "Implementación de estrategias frente al cambio climático": true,
+        "Mecanismos de conservación de la naturaleza y el ambiente": true,
+        "Planeación y posicionamiento en diálogos internacionales sobre temas ambientales": true,
+        "Integración del conocimiento indígena en estrategias de conservación y cambio climático": true
+      },
+      P17: {
+        "Protección y restauración de ecosistemas hídricos (humedales, páramos, cuencas) para asegurar agua y calidad.": true,
+        "Implementación de sistemas de captación, almacenamiento y uso eficiente del agua (cosecha de lluvia, reúso, riego tecnificado).": false,
+        "Monitoreo participativo de caudales, calidad del agua y eventos extremos (sequías, inundaciones) como adaptación climática.": false,
+        "Integración de saberes locales y ancestrales en el manejo sostenible del agua (manantiales, acuerdos comunitarios, prácticas tradicionales).": true
+      },
+      P18: {
+        "Proyectos productivos y empoderamiento económico sostenible": true,
+        "Fomento de sistemas agroecológicos y agricultura regenerativa": true,
+        "Rescate y conservación de semillas nativas y variedades locales": true,
+        "Fortalecimiento de mercados locales y formas de comercialización": true
+      },
+      P19: {
+        "Empoderamiento de mujeres mediante fortalecimiento de capacidades": false,
+        "Prevención de violencia de género": false,
+        "Participación en la toma de decisiones y defensa de los derechos de las mujeres": true,
+        "Reconocimiento del rol de la mujer desde los valores y prácticas tradicionales": true
+      },
+      P20: {
+        "Desarrollo de procesos educativos indígenas desde los valores y principios ancestrales": true,
+        "Recuperación de lenguas indígenas": true,
+        "Transmisión intergeneracional de saberes": true,
+        "Producción cultural y memoria histórica": true
+      },
+      P21: {
+        "Fortalecimiento de sistemas de salud tradicional y medicina ancestral": false,
+        "Formación y acompañamiento a parteras, sanadores o promotores de salud comunitaria": false,
+        "Acceso a servicios de salud intercultural y articulación con sistemas de salud oficiales": false,
+        "Soberanía sanitaria y prevención comunitaria": false
+      },
+      P22: {
+        "Diálogo y posicionamiento interinstitucional en espacios públicos, foros, con gobiernos, ONG o sector privado.": true,
+        "Generación de políticas, orientada a propuestas de leyes o participación en la toma de decisiones a nivel local, nacional o regional.": true,
+        "Participación en redes, alianzas, plataformas o movimientos colectivos, y coordinación con otras organizaciones para alcanzar objetivos comunes": true
+      },
+      P23: {
+        "Reivindicación de derechos de autodeterminación": true,
+        "Documentación de violaciones de derechos": false,
+        "Mecanismos de protección para defensores indígenas": true,
+        "Acceso a mecanismos internacionales": true
+      },
+      P24: {
+        "Capacitación en administración, planificación y evaluación": true,
+        "Uso de herramientas para generación de datos": false,
+        "Construcción de capacidades en liderazgo y gestión de recursos": true
+      }
+    }
+  },{
+    org: "Coordinadora Nacional de Pueblos Indígenas de Panamá (COONAPIP)",
+    shortName: "COONAPIP",
+    country: "Panamá",
+    scope: "Nacional",
+    type: "Organización Nacional que aglutina 12 congresos y consejos indígenas de Panamá",
+    legal: "Autoridad de Gobierno o estructuras Tradicionales",
+    year: 1991,
+    registered: "Estamos en proceso de obtener registro, certificación o personería jurídica",
+    specificity: {
+      Women: 0,
+      "Research center": 0,
+      Youth: 0,
+      Otro: 1,
+      Otro_texto: "Enfocados en la búsqueda de reconocimiento de los derechos de los pueblos indígenas"
+    },
+    peoples: "7 pueblos indígenas: Naso, Bugle, Bribri, Ngäbe, Guna, Wounaan y Emberá",
+    impact: "Información en proceso de recolección",
+    territory: "2 millones de hectáreas reconocidas y 2 millones en búsqueda de reconocimiento",
+    ecosystems: {
+      "Alta montaña / Altiplano": false,
+      "Bosques tropicales": true,
+      "Valles": true,
+      "Costas y manglares": true,
+      "Otras": false
+    },
+    access: {
+      "Sitio web": true,
+      "Redes sociales": true,
+      "Publicaciones (informes, investigaciones, boletines, revistas, libros)": false,
+      "No tenemos sitio web ni redes sociales": false,
+      "Otras": false
+    },
+    capacity: {
+      "Capacitación en administración, planificación y evaluación": true,
+      "Uso de herramientas para generación de datos": true,
+      "Construcción de capacidades en liderazgo y gestión de recursos": true,
+      "No, no hemos realizado ningún programa de fortalecimiento de capacidades para socios o comunidades.": false,
+      "Otras": false
+    },
+    fund: "No especificado",
+    actions: {
+      P15: {
+        "Recuperación de tierras": true,
+        "Protección de tierras ancestrales y sitios sagrados": true,
+        "Vigilancia comunitaria y gobernanza territorial": true,
+        "Acción frente a megaproyectos extractivos": true
+      },
+      P16: {
+        "Implementación de estrategias frente al cambio climático": true,
+        "Mecanismos de conservación de la naturaleza y el ambiente": true,
+        "Planeación y posicionamiento en diálogos internacionales sobre temas ambientales": true,
+        "Integración del conocimiento indígena en estrategias de conservación y cambio climático": true
+      },
+      P17: {
+        "Protección y restauración de ecosistemas hídricos (humedales, páramos, cuencas) para asegurar agua y calidad.": true,
+        "Implementación de sistemas de captación, almacenamiento y uso eficiente del agua (cosecha de lluvia, reúso, riego tecnificado).": false,
+        "Monitoreo participativo de caudales, calidad del agua y eventos extremos (sequías, inundaciones) como adaptación climática.": false,
+        "Integración de saberes locales y ancestrales en el manejo sostenible del agua (manantiales, acuerdos comunitarios, prácticas tradicionales).": true
+      },
+      P18: {
+        "Proyectos productivos y empoderamiento económico sostenible": true,
+        "Fomento de sistemas agroecológicos y agricultura regenerativa": true,
+        "Rescate y conservación de semillas nativas y variedades locales": true,
+        "Fortalecimiento de mercados locales y formas de comercialización": true
+      },
+      P19: {
+        "Empoderamiento de mujeres mediante fortalecimiento de capacidades": true,
+        "Prevención de violencia de género": true,
+        "Participación en la toma de decisiones y defensa de los derechos de las mujeres": true,
+        "Reconocimiento del rol de la mujer desde los valores y prácticas tradicionales": true
+      },
+      P20: {
+        "Desarrollo de procesos educativos indígenas desde los valores y principios ancestrales": true,
+        "Recuperación de lenguas indígenas": true,
+        "Transmisión intergeneracional de saberes": true,
+        "Producción cultural y memoria histórica": false
+      },
+      P21: {
+        "Fortalecimiento de sistemas de salud tradicional y medicina ancestral": true,
+        "Formación y acompañamiento a parteras, sanadores o promotores de salud comunitaria": false,
+        "Acceso a servicios de salud intercultural y articulación con sistemas de salud oficiales": false,
+        "Soberanía sanitaria y prevención comunitaria": false
+      },
+      P22: {
+        "Diálogo y posicionamiento interinstitucional en espacios públicos, foros, con gobiernos, ONG o sector privado.": true,
+        "Generación de políticas, orientada a propuestas de leyes o participación en la toma de decisiones a nivel local, nacional o regional.": true,
+        "Participación en redes, alianzas, plataformas o movimientos colectivos, y coordinación con otras organizaciones para alcanzar objetivos comunes": true
+      },
+      P23: {
+        "Reivindicación de derechos de autodeterminación": true,
+        "Documentación de violaciones de derechos": true,
+        "Mecanismos de protección para defensores indígenas": true,
+        "Acceso a mecanismos internacionales": true
+      },
+      P24: {
+        "Capacitación en administración, planificación y evaluación": true,
+        "Uso de herramientas para generación de datos": true,
+        "Construcción de capacidades en liderazgo y gestión de recursos": true
+      }
+    }
+  }],
+  themes: [
+    {id:"territorio", title:"Territorio, Vida y Ambiente", questions:[
+      ["P15","¿Qué acciones relacionadas con los derechos territoriales y la defensa de la tierra lleva a cabo su organización?",[
+        ["P15_1","Recuperación de tierras"],["P15_2","Protección de tierras ancestrales y sitios sagrados"],["P15_3","Vigilancia comunitaria y gobernanza territorial"],["P15_4","Acción frente a megaproyectos extractivos"],["P15_Otro_texto","Otro"]
+      ]],
+      ["P16","¿Qué acciones relacionadas con la conservación ambiental, el cambio climático y la biodiversidad lleva a cabo su organización?",[
+        ["P16_1","Implementación de estrategias frente al cambio climático"],["P16_2","Mecanismos de conservación de la naturaleza y el ambiente"],["P16_3","Planeación y posicionamiento en diálogos internacionales sobre temas ambientales"],["P16_4","Integración del conocimiento indígena en estrategias de conservación y cambio climático"],["P16_Otro_texto","Otro"]
+      ]],
+      ["P17","¿Qué acciones relacionadas con la gestión y conservación de recursos hídricos frente al cambio climático lleva a cabo su organización?",[
+        ["P17_1","Protección y restauración de ecosistemas hídricos (humedales, páramos, cuencas) para asegurar agua y calidad."],["P17_2","Implementación de sistemas de captación, almacenamiento y uso eficiente del agua (cosecha de lluvia, reúso, riego tecnificado)."],["P17_3","Monitoreo participativo de caudales, calidad del agua y eventos extremos (sequías, inundaciones) como adaptación climática."],["P17_4","Integración de saberes locales y ancestrales en el manejo sostenible del agua (manantiales, acuerdos comunitarios, prácticas tradicionales)."],["P17_Otro_texto","Otro"]
+      ]],
+      ["P18","¿Qué acciones relacionadas con medios de vida, economías autosostenibles y soberanía alimentaria lleva a cabo su organización?",[
+        ["P18_1","Proyectos productivos y empoderamiento económico sostenible"],["P18_2","Fomento de sistemas agroecológicos y agricultura regenerativa"],["P18_3","Rescate y conservación de semillas nativas y variedades locales"],["P18_4","Fortalecimiento de mercados locales y formas de comercialización"],["P18_Otro_texto","Otro"]
+      ]]
+    ]},
+    {id:"equidad", title:"Mujeres, Cultura, Conocimientos y Bienestar", questions:[
+      ["P19","¿Qué acciones relacionadas con género, liderazgo de mujeres y equidad lleva a cabo su organización?",[
+        ["P19_1","Empoderamiento de mujeres mediante fortalecimiento de capacidades"],["P19_2","Prevención de violencia de género"],["P19_3","Participación en la toma de decisiones y defensa de los derechos de las mujeres"],["P19_4","Reconocimiento del rol de la mujer desde los valores y prácticas tradicionales"],["P19_Otro_texto","Otro"]
+      ]],
+      ["P20","¿Qué acciones relacionadas con educación intercultural y revitalización cultural lleva a cabo su organización?",[
+        ["P20_1","Desarrollo de procesos educativos indígenas desde los valores y principios ancestrales"],["P20_2","Recuperación de lenguas indígenas"],["P20_3","Transmisión intergeneracional de saberes"],["P20_4","Producción cultural y memoria histórica"],["P20_Otro_texto","Otro"]
+      ]],
+      ["P21","¿Qué acciones relacionadas con salud indígena, medicina tradicional y bienestar comunitario lleva a cabo su organización?",[
+        ["P21_1","Fortalecimiento de sistemas de salud tradicional y medicina ancestral"],["P21_2","Formación y acompañamiento a parteras, sanadores o promotores de salud comunitaria"],["P21_3","Acceso a servicios de salud intercultural y articulación con sistemas de salud oficiales"],["P21_4","Soberanía sanitaria y prevención comunitaria"],["P21_Otro_texto","Otro"]
+      ]]
+    ]},
+    {id:"gobernanza", title:"Gobernanza, Coordinación y Derechos", questions:[
+      ["P22","¿Qué acciones relacionadas con gobernanza y trabajo solidario lleva a cabo su organización?",[
+        ["P22_1","Diálogo y posicionamiento interinstitucional en espacios públicos, foros, con gobiernos, ONG o sector privado."],["P22_2","Generación de políticas, orientada a propuestas de leyes o participación en la toma de decisiones a nivel local, nacional o regional."],["P22_3","Participación en redes, alianzas, plataformas o movimientos colectivos, y coordinación con otras organizaciones para alcanzar objetivos comunes"],["P22_Otro_texto","Otro"]
+      ]],
+      ["P23","¿Qué acciones relacionadas con la defensa de los derechos humanos y el acceso a la justicia lleva a cabo su organización?",[
+        ["P23_1","Reivindicación de derechos de autodeterminación"],["P23_2","Documentación de violaciones de derechos"],["P23_3","Mecanismos de protección para defensores indígenas"],["P23_4","Acceso a mecanismos internacionales"],["P23_Otro_texto","Otro"]
+      ]],
+      ["P24","¿Qué programas de fortalecimiento de capacidades ofrece su organización?",[
+        ["P24_1","Capacitación en administración, planificación y evaluación"],["P24_2","Uso de herramientas para generación de datos"],["P24_3","Construcción de capacidades en liderazgo y gestión de recursos"],["P24_4","No, no hemos realizado ningún programa de fortalecimiento de capacidades para socios o comunidades."],["P24_Otro_texto","Otro"]
+      ]]
+    ]}
+  ]
+};
+
+
+
+/* ===== LÓGICA DE LA RED DE ARTICULACIÓN ===== */
+function networkThemeForQid(qid){
+  const t=DB.themes.find(x=>x.questions.some(q=>q[0]===qid));
+  return t?t.title:'Área temática';
+}
+function networkActionSet(r){
+  const set=[];
+  DB.themes.forEach(t=>t.questions.forEach(([qid,qtitle,opts])=>{
+    opts.forEach(([variable,label])=>{
+      if(variable.endsWith('_texto')) return;
+      // P24 forma parte del mismo universo de acciones comparables.
+      // La opción P24_4 es negativa y no es una acción.
+      if(qid==='P24' && variable==='P24_4') return;
+      if(r.actions?.[qid]?.[label]===true){
+        const theme=qid==='P24' ? 'Fortalecimiento de capacidades' : t.title;
+        set.push({qid,label,theme});
+      }
+    });
+  }));
+  return set;
+}
+function networkThemesForRecord(r){
+  const themes=new Set();
+  networkActionSet(r).forEach(a=>themes.add(a.theme));
+  return [...themes];
+}
+function networkBuildPairs(){
+  const records=DB.records;
+  const pairs=[];
+  for(let i=0;i<records.length;i++){
+    for(let j=i+1;j<records.length;j++){
+      const a=records[i],b=records[j];
+      const aa=networkActionSet(a),bb=networkActionSet(b);
+      const aMap=new Map(aa.map(x=>[x.label,x])), bMap=new Map(bb.map(x=>[x.label,x]));
+      const all=[...new Set([...aMap.keys(),...bMap.keys()])];
+      const shared=all.filter(label=>aMap.has(label)&&bMap.has(label));
+      const aOnly=all.filter(label=>aMap.has(label)&&!bMap.has(label));
+      const bOnly=all.filter(label=>bMap.has(label)&&!aMap.has(label));
+      const complementary=[...aOnly,...bOnly];
+      const sharedThemes=[...new Set(shared.map(label=>aMap.get(label)?.theme||bMap.get(label)?.theme))];
+      const compByTheme={};
+      complementary.forEach(label=>{
+        const item=aMap.get(label)||bMap.get(label);
+        if(item)(compByTheme[item.theme] ||= []).push(label);
+      });
+      const union=Math.max(1,all.length);
+      const differenceRate=complementary.length/union;
+      const coincidence=shared.length/union;
+      const directionalA=aOnly.length/union;
+      const directionalB=bOnly.length/union;
+      // La relación se describe únicamente con acciones reportadas.
+      // No se calcula ningún indicador separado de complementariedad de capacidades.
+      let level=coincidence>=0.75?'high':coincidence>=0.50?'medium':'shared';
+      const themes=[...new Set([...sharedThemes,...Object.keys(compByTheme)])];
+      pairs.push({i,j,a,b,level,shared,aOnly,bOnly,complementary,compByTheme,sharedThemes,themes,union,differenceRate,coincidence,directionalA,directionalB});
+    }
+  }
+  return pairs.sort((x,y)=>y.coincidence-x.coincidence);
+}
+
+function pct(v){ return `${(v*100).toFixed(1).replace('.',',')}%`; }
+
+function networkPopulateFilter(){
+  const sel=document.getElementById('networkThemeFilter');
+  if(!sel)return;
+  const current=sel.value;
+  // El selector se reconstruye desde los datos actuales, no desde una lista fija.
+  // Solo se muestran áreas que pueden filtrar al menos un vínculo de la red.
+  const themes=new Set();
+  networkBuildPairs().forEach(p=>p.themes.forEach(t=>themes.add(t)));
+  const thematicTitles=[
+    'Territorio, Vida y Ambiente',
+    'Mujeres, Cultura, Conocimientos y Bienestar',
+    'Gobernanza, Coordinación y Derechos'
+  ];
+  const transversalTitle='Eje transversal: Fortalecimiento de capacidades';
+  const thematic=[...themes].filter(t=>thematicTitles.includes(t)).sort((a,b)=>a.localeCompare(b,'es'));
+  const transversal=[...themes].filter(t=>t===transversalTitle);
+  sel.innerHTML='<option value="">Todas las áreas</option>'
+    +(thematic.length?`<optgroup label="Áreas temáticas">${thematic.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('')}</optgroup>`:'')
+    +(transversal.length?`<optgroup label="Eje transversal">${transversal.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('')}</optgroup>`:'');
+  if([...themes].includes(current)) sel.value=current; else sel.value='';
+}
+function networkSvgPosition(i,n,w,h){
+  if(n===1)return [w/2,h/2];
+  const cx=w/2,cy=h/2,r=Math.min(w,h)*.45;
+  const angle=(-Math.PI/2)+(i/n)*Math.PI*2;
+  return [cx+Math.cos(angle)*r,cy+Math.sin(angle)*r];
+}
+function networkLevelLabel(level){
+  return level==='high' ? 'Alta coincidencia reportada' : level==='medium' ? 'Coincidencia y diferencias reportadas' : 'Diversidad de acciones reportadas';
+}
+function networkLevelDescription(level){
+  return level==='high'
+    ? 'Predominan las acciones reportadas por ambas organizaciones, con algunas diferencias reportadas que pueden abrir espacios de intercambio.'
+    : level==='medium'
+      ? 'Se observan coincidencias y diferencias reportadas en proporciones relevantes para el intercambio entre pares.'
+      : 'Las acciones reportadas muestran puntos de coincidencia y diferencias que pueden orientar el aprendizaje entre pares.';
+}
+
+// Genera formas de articulación a partir de las acciones realmente reportadas
+// por cada organización. No interpreta una acción no marcada como ausencia.
+function networkCollaborationSuggestions(pair, themeFilter=''){
+  const a=pair.a,b=pair.b;
+  const actionsA=new Set(networkActionSet(a).map(x=>x.label));
+  const actionsB=new Set(networkActionSet(b).map(x=>x.label));
+  const suggestions=[];
+  const add=(text,theme)=>{
+    if(!themeFilter || theme===themeFilter || (themeFilter==='Eje transversal: Fortalecimiento de capacidades' && theme==='Fortalecimiento de capacidades')) suggestions.push(text);
+  };
+  const has=(set,terms)=>terms.some(t=>[...set].some(x=>x.toLowerCase().includes(t.toLowerCase())));
+  const both=(terms)=>has(actionsA,terms)&&has(actionsB,terms);
+  const either=(terms)=>has(actionsA,terms)||has(actionsB,terms);
+
+  // Territorio, Vida y Ambiente
+  if(either(['Recuperación de tierras','Protección de tierras ancestrales','Vigilancia comunitaria','megaproyectos extractivos']))
+    add('Intercambio de experiencias sobre defensa territorial, protección de tierras ancestrales y gobernanza territorial.','Territorio, Vida y Ambiente');
+  if(either(['cambio climático','conservación de la naturaleza','conocimiento indígena en estrategias de conservación','diálogos internacionales sobre temas ambientales']))
+    add('Intercambio de estrategias comunitarias frente al cambio climático, conservación ambiental y posicionamiento en temas ambientales.','Territorio, Vida y Ambiente');
+  if(either(['ecosistemas hídricos','captación, almacenamiento','Monitoreo participativo de caudales','manejo sostenible del agua']))
+    add('Intercambio de metodologías y saberes para la gestión comunitaria y sostenible del agua.','Territorio, Vida y Ambiente');
+  if(either(['Proyectos productivos','agroecológicos','semillas nativas','mercados locales']))
+    add('Intercambio de experiencias sobre medios de vida sostenibles, agroecología, semillas nativas y mercados locales.','Territorio, Vida y Ambiente');
+  if(both(['Recuperación de tierras','conservación de la naturaleza','ecosistemas hídricos','semillas nativas']))
+    add('Construcción conjunta de aprendizajes o documentación regional sobre experiencias territoriales y ambientales.','Territorio, Vida y Ambiente');
+
+  // Mujeres, Cultura, Conocimientos y Bienestar
+  if(either(['Empoderamiento de mujeres','Prevención de violencia de género','Participación en la toma de decisiones','Reconocimiento del rol de la mujer']))
+    add('Intercambio de metodologías para fortalecer el liderazgo de mujeres, la participación y la prevención de violencias.','Mujeres, Cultura, Conocimientos y Bienestar');
+  if(either(['procesos educativos indígenas','Recuperación de lenguas indígenas','Transmisión intergeneracional','Producción cultural']))
+    add('Intercambio de metodologías, materiales y experiencias para educación indígena, revitalización cultural y transmisión de saberes.','Mujeres, Cultura, Conocimientos y Bienestar');
+  if(either(['sistemas de salud tradicional','parteras','sanadores','salud intercultural','Soberanía sanitaria']))
+    add('Intercambio de experiencias sobre medicina ancestral, salud intercultural y bienestar comunitario.','Mujeres, Cultura, Conocimientos y Bienestar');
+  if(both(['Recuperación de lenguas indígenas','Transmisión intergeneracional','Producción cultural']))
+    add('Creación conjunta de espacios de aprendizaje e intercambio cultural entre organizaciones.','Mujeres, Cultura, Conocimientos y Bienestar');
+
+  // Gobernanza, Coordinación y Derechos
+  if(either(['Diálogo y posicionamiento interinstitucional','Generación de políticas','redes, alianzas','Participación en redes']))
+    add('Intercambio de estrategias de incidencia, diálogo institucional y construcción de alianzas regionales.','Gobernanza, Coordinación y Derechos');
+  if(either(['autodeterminación','Documentación de violaciones','Mecanismos de protección','mecanismos internacionales']))
+    add('Intercambio de experiencias para la defensa de derechos, documentación, protección e incidencia en mecanismos nacionales e internacionales.','Gobernanza, Coordinación y Derechos');
+  if(both(['redes, alianzas','mecanismos internacionales']))
+    add('Construcción de acciones o posicionamientos conjuntos en espacios regionales e internacionales.','Gobernanza, Coordinación y Derechos');
+
+  // Si no hay una coincidencia suficientemente específica, mantenemos una salida prudente.
+  if(!suggestions.length){
+    if(themeFilter==='Eje transversal: Fortalecimiento de capacidades')
+      suggestions.push('Explorar un intercambio de metodologías o experiencias de fortalecimiento de capacidades, según lo que cada organización reporte en el instrumento.');
+    else if(themeFilter)
+      suggestions.push('Explorar un intercambio de experiencias dentro de esta área a partir de las acciones reportadas por las organizaciones.');
+    else
+      suggestions.push('Explorar un intercambio de experiencias, aprendizaje entre pares o una acción conjunta en los temas que ambas organizaciones reportan.');
+  }
+  return [...new Set(suggestions)].slice(0,6);
+}
+
+function networkDirectionalCollaboration(pair,themeFilter=''){
+  const a=pair.a,b=pair.b;
+  const actionsA=networkActionSet(a), actionsB=networkActionSet(b);
+  const mapA=new Map(actionsA.map(x=>[x.label,x])), mapB=new Map(actionsB.map(x=>[x.label,x]));
+  const onlyA=actionsA.filter(x=>!mapB.has(x.label));
+  const onlyB=actionsB.filter(x=>!mapA.has(x.label));
+  const shared=actionsA.filter(x=>mapB.has(x.label));
+  const out={aToB:[],bToA:[],shared:[]};
+  const add=(bucket,text,theme)=>{
+    if(!themeFilter || theme===themeFilter || (themeFilter==='Eje transversal: Fortalecimiento de capacidades' && theme==='Fortalecimiento de capacidades')) bucket.push(text);
+  };
+  const actionText={
+    'Recuperación de Tierras':'compartir experiencias y metodologías de recuperación de tierras',
+    'Protección de tierras ancestrales y sitios sagrados':'compartir estrategias de protección de tierras ancestrales y sitios sagrados',
+    'Vigilancia comunitaria y gobernanza territorial':'compartir experiencias de vigilancia comunitaria y gobernanza territorial',
+    'Acción frente a megaproyectos extractivos':'compartir estrategias de defensa territorial frente a megaproyectos extractivos',
+    'Implementación de estrategias frente al cambio climático':'compartir estrategias comunitarias frente al cambio climático',
+    'Mecanismos de conservación de la naturaleza y el ambiente':'compartir experiencias de conservación de la naturaleza y el ambiente',
+    'Planeación y posicionamiento en diálogos internacionales sobre temas ambientales':'compartir experiencias de posicionamiento en diálogos ambientales',
+    'Integración del conocimiento indígena en estrategias de conservación y cambio climático':'compartir metodologías que integren conocimiento indígena en conservación y cambio climático',
+    'Protección/restauración ecosistemas hídricos':'compartir experiencias de protección y restauración de ecosistemas hídricos',
+    'Captación/almacenamiento/uso eficiente agua':'compartir experiencias de captación, almacenamiento y uso eficiente del agua',
+    'Monitoreo participativo de caudales/calidad/eventos extremos':'compartir metodologías de monitoreo participativo del agua',
+    'Integración saberes locales/ancestrales en manejo agua':'compartir saberes y metodologías locales o ancestrales para el manejo del agua',
+    'Proyectos productivos/empoderamiento económico sostenible':'compartir experiencias de proyectos productivos y empoderamiento económico sostenible',
+    'Agroecología/agricultura regenerativa':'compartir experiencias de agroecología y agricultura regenerativa',
+    'Rescate/conservación semillas nativas':'compartir experiencias de rescate y conservación de semillas nativas',
+    'Fortalecimiento mercados locales/comercialización':'compartir estrategias de fortalecimiento de mercados locales y comercialización',
+    'Empoderamiento mujeres mediante capacidades':'compartir metodologías para fortalecer las capacidades de las mujeres',
+    'Prevención violencia de género':'compartir experiencias comunitarias de prevención de violencia de género',
+    'Participación en toma decisiones/defensa derechos mujeres':'compartir estrategias de participación de mujeres en la toma de decisiones y defensa de sus derechos',
+    'Reconocimiento rol mujer desde valores/prácticas tradicionales':'compartir experiencias de reconocimiento del rol de las mujeres desde valores y prácticas tradicionales',
+    'Procesos educativos indígenas desde valores/principios ancestrales':'compartir metodologías de educación indígena desde valores y principios ancestrales',
+    'Recuperación lenguas indígenas':'compartir metodologías y experiencias de recuperación de lenguas indígenas',
+    'Transmisión intergeneracional saberes':'compartir metodologías de transmisión intergeneracional de saberes',
+    'Producción cultural/memoria histórica':'compartir experiencias de producción cultural y memoria histórica',
+    'Fortalecimiento sistemas salud tradicional/medicina ancestral':'compartir experiencias de medicina ancestral y sistemas de salud tradicional',
+    'Formación/acomp. parteras/sanadores/promotores':'compartir metodologías de formación y acompañamiento a parteras, sanadores o promotores',
+    'Acceso servicios salud intercultural/articulación oficiales':'compartir experiencias de salud intercultural y articulación con servicios oficiales',
+    'Soberanía sanitaria/prevención comunitaria':'compartir experiencias de soberanía sanitaria y prevención comunitaria',
+    'Diálogo/posicionamiento interinstitucional':'compartir estrategias de diálogo y posicionamiento interinstitucional',
+    'Generación de políticas':'compartir experiencias de participación en generación de políticas',
+    'Redes/alianzas/plataformas/movimientos/coordinación':'compartir estrategias de construcción de redes, alianzas y coordinación',
+    'Reivindicación autodeterminación':'compartir experiencias de defensa de la autodeterminación',
+    'Documentación violaciones':'compartir metodologías de documentación de violaciones de derechos',
+    'Mecanismos protección defensores':'compartir experiencias de protección de defensores y defensoras',
+    'Acceso mecanismos internacionales':'compartir experiencias de acceso e incidencia en mecanismos internacionales'
+  };
+  const normalizeAction=(label)=>{
+    if(actionText[label]) return actionText[label];
+    const l=label.toLowerCase();
+    if(l.includes('tierra')) return 'compartir experiencias de defensa y protección territorial';
+    if(l.includes('agua')) return 'compartir experiencias de gestión comunitaria del agua';
+    if(l.includes('mujer')) return 'compartir experiencias de liderazgo y participación de mujeres';
+    if(l.includes('lengua')||l.includes('cultural')||l.includes('saberes')) return 'compartir experiencias de revitalización cultural y transmisión de saberes';
+    if(l.includes('salud')||l.includes('sanitaria')) return 'compartir experiencias de salud intercultural y bienestar comunitario';
+    if(l.includes('derechos')||l.includes('autodeterminación')||l.includes('violaciones')) return 'compartir experiencias de defensa de derechos';
+    if(l.includes('redes')||l.includes('alianzas')||l.includes('polít')) return 'compartir estrategias de incidencia y articulación';
+    return 'compartir la experiencia y metodología desarrollada en esta acción';
+  };
+  const group=(items,bucket,direction)=>{
+    const byTheme={};
+    items.forEach(x=>{
+      if(themeFilter && x.theme!==themeFilter && !(themeFilter==='Eje transversal: Fortalecimiento de capacidades' && x.theme==='Fortalecimiento de capacidades')) return;
+      (byTheme[x.theme] ||= []).push(x);
+    });
+    Object.entries(byTheme).forEach(([theme,arr])=>{
+      const labels=[...new Set(arr.map(x=>x.label))];
+      if(!labels.length) return;
+      const itemsHtml=labels.map(label=>`<li><strong>${esc(label)}</strong><br><span>${esc(normalizeAction(label))}</span></li>`).join('');
+      bucket.push(`<div class="network-direction-detail"><div class="network-direction-theme">${esc(theme)}</div><ul class="network-collab">${itemsHtml}</ul></div>`);
+    });
+  };
+  if(shared.length){
+    const sharedByTheme={};
+    shared.forEach(x=>{if(!themeFilter||x.theme===themeFilter)(sharedByTheme[x.theme] ||= []).push(x);});
+    Object.entries(sharedByTheme).forEach(([theme,arr])=>{
+      const labels=[...new Set(arr.map(x=>x.label))];
+      if(labels.length){
+        const itemsHtml=labels.map(label=>`<li><strong>${esc(label)}</strong><br><span>Aprendizaje entre pares o posible acción conjunta en esta acción reportada por ambas organizaciones.</span></li>`).join('');
+        out.shared.push(`<div class="network-direction-detail"><div class="network-direction-theme">${esc(theme)}</div><ul class="network-collab">${itemsHtml}</ul></div>`);
+      }
+    });
+  }
+  return out;
+}
+
+function networkRenderInfo(pair,focusIndex){
+  const box=document.getElementById('networkInfo');
+  if(!pair){
+    box.innerHTML='<h3>Cómo leer esta red</h3><div class="network-pair">Cada círculo representa una organización. Las líneas representan una oportunidad potencial de articulación identificada a partir de los datos del mapeo.</div><div class="network-section"><h4>Qué puedes explorar</h4><ul class="network-collab"><li>Selecciona la línea para conocer qué acciones son diferentes entre ambas organizaciones.</li></ul></div><div class="network-note"><strong>Precaución metodológica:</strong> una acción no reportada no significa necesariamente que la organización no la realice. Las diferencias se presentan como posibles puntos de intercambio a partir de lo registrado en el instrumento.</div>';
+    return;
+  }
+
+  const a=pair.a,b=pair.b;
+  // Universo completo del instrumento: 38 acciones estandarizadas.
+  // P24 está incluido y la opción negativa de P24 queda fuera.
+  const instrumentActions=[...new Set(DB.themes.flatMap(t=>t.questions.flatMap(([qid,qtitle,opts])=>opts.filter(([variable])=>!variable.endsWith('_texto') && !(qid==='P24' && variable==='P24_4')).map(([,label])=>label))))];
+  const reportedUnion=new Set([...pair.shared,...pair.aOnly,...pair.bOnly]);
+  const neither=instrumentActions.filter(label=>!reportedUnion.has(label));
+  const denominator=Math.max(1,reportedUnion.size);
+  const aOnly=pair.aOnly;
+  const bOnly=pair.bOnly;
+  const rateA=aOnly.length/denominator;
+  const rateB=bOnly.length/denominator;
+  const labelA=a.shortName||a.org;
+  const labelB=b.shortName||b.org;
+
+  const sharedCount=pair.shared.length;
+  const sharedRate=sharedCount/denominator;
+  box.innerHTML=`
+    <h3>Oportunidades de relación</h3>
+    <div class="network-pair"><strong>${esc(labelA)}</strong> ↔ <strong>${esc(labelB)}</strong><br>${esc(a.country||'')} · ${esc(b.country||'')}</div>
+
+    <div class="network-section">
+      <h4>Resultado general de la relación</h4>
+      <div class="network-note"><strong>¿Cómo se hace esta comparación?</strong> El instrumento de mapeo incluye <strong>${instrumentActions.length} acciones posibles</strong>. En la comparación entre <strong>${esc(labelA)}</strong> y <strong>${esc(labelB)}</strong>, encontramos que <strong>${denominator} ${denominator===1?'acción fue reportada':'acciones fueron reportadas'}</strong> por al menos una de las dos organizaciones. Por eso, los porcentajes se calculan sobre ${denominator===1?'esa acción':'esas '+denominator+' acciones'}. <strong>${neither.length} ${neither.length===1?'acción que ninguna de las dos reportó se muestra':'acciones que ninguna de las dos reportó se muestran'}</strong> por separado, porque ${neither.length===1?'no permite':'no permiten'} identificar una diferencia entre ellas.</div>
+      <div class="network-metric-grid">
+        <div class="network-metric"><strong>${pct(sharedRate)}</strong><span>Coincidencia reportada</span></div>
+        <div class="network-metric"><strong>${pct(rateA)}</strong><span>${esc(labelA)} → ${esc(labelB)}</span></div>
+        <div class="network-metric"><strong>${pct(rateB)}</strong><span>${esc(labelB)} → ${esc(labelA)}</span></div>
+        <div class="network-metric"><strong>${neither.length}</strong><span>No reportada por ninguna</span></div>
+      </div>
+      <div class="network-note"><strong>¿Qué significa la coincidencia reportada?</strong> <strong>${sharedCount} acciones</strong> fueron reportadas por ambas organizaciones (<strong>${pct(sharedRate)}</strong> de las ${denominator} acciones comparables). Estas coincidencias muestran campos de experiencia compartida que pueden constituir puntos de partida para el intercambio de conocimientos, aprendizaje entre pares y posibles procesos de articulación. La coincidencia no implica que las organizaciones desarrollen estas acciones de la misma manera ni permite establecer niveles de capacidad o desempeño.</div>
+      ${neither.length?`<div class="network-note"><strong>¿Qué significa “no reportada por ninguna”?</strong> <strong>${neither.length} acción${neither.length===1?'':'es'}</strong> no fue reportada por ninguna de las dos organizaciones. Esto significa únicamente que no fue marcada en el instrumento por ninguna de ellas; no permite concluir que la organización no realice esa acción.<div class="network-tags" style="margin-top:8px;">${neither.map(label=>`<span class="network-tag">${esc(label)}</span>`).join('')}</div></div>`:''}
+    </div>
+
+    <div class="network-section">
+      <h4>${esc(labelA)} → ${esc(labelB)}</h4>
+      <div class="network-metric-grid" style="grid-template-columns:1fr;">
+        <div class="network-metric"><strong>${pct(rateA)}</strong><span>Diferencias reportadas por ${esc(labelA)}</span></div>
+      </div>
+      <div class="network-note"><strong>${aOnly.length} acciones</strong> fueron reportadas por ${esc(labelA)} y no por ${esc(labelB)} (<strong>${pct(rateA)}</strong> de las ${denominator} acciones comparables). Estas acciones pueden señalar experiencias o conocimientos que ${esc(labelA)} podría compartir con ${esc(labelB)}, según el interés de ambas organizaciones.</div>
+      ${aOnly.length?`<div class="network-tags">${aOnly.map(label=>`<span class="network-tag complement">${esc(label)}</span>`).join('')}</div>`:'<div class="network-note">No se identificaron diferencias reportadas en esta dirección.</div>'}
+    </div>
+
+    <div class="network-section">
+      <h4>${esc(labelB)} → ${esc(labelA)}</h4>
+      <div class="network-metric-grid" style="grid-template-columns:1fr;">
+        <div class="network-metric"><strong>${pct(rateB)}</strong><span>Diferencias reportadas por ${esc(labelB)}</span></div>
+      </div>
+      <div class="network-note"><strong>${bOnly.length} acciones</strong> fueron reportadas por ${esc(labelB)} y no por ${esc(labelA)} (<strong>${pct(rateB)}</strong> de las ${denominator} acciones comparables). Estas acciones pueden señalar experiencias o conocimientos que ${esc(labelB)} podría compartir con ${esc(labelA)}, según el interés de ambas organizaciones.</div>
+      ${bOnly.length?`<div class="network-tags">${bOnly.map(label=>`<span class="network-tag complement">${esc(label)}</span>`).join('')}</div>`:'<div class="network-note">No se identificaron diferencias reportadas en esta dirección.</div>'}
+    </div>
+
+    <div class="network-note"><strong>Lectura general:</strong> los porcentajes se calculan sobre el conjunto de ${denominator} acciones comparables del instrumento, considerando todas las áreas en conjunto. No son índices de capacidad, superioridad ni probabilidades de colaboración.</div>`;
+}
+
+function networkRenderThemeInfo(theme,pairs){
+  const box=document.getElementById('networkInfo');
+  if(!theme){ return false; }
+  const involved=[...new Set(pairs.flatMap(p=>[p.i,p.j]))];
+  const names=involved.map(i=>DB.records[i]);
+  const actionLabels=new Set();
+  const sharedLabels=new Set();
+  const complementaryLabels=new Set();
+  pairs.forEach(p=>{
+    const sharedThemes=p.shared.filter(label=>{
+      const a=networkActionSet(p.a).find(x=>x.label===label);
+      return a?.theme===theme;
+    });
+    sharedThemes.forEach(x=>sharedLabels.add(x));
+    (p.compByTheme[theme]||[]).forEach(x=>complementaryLabels.add(x));
+  });
+  const collaboration=[];
+  pairs.forEach(pair=>{
+    networkCollaborationSuggestions(pair,theme).forEach(x=>{ if(!collaboration.includes(x)) collaboration.push(x); });
+  });
+  if(!collaboration.length) collaboration.push('Explorar una articulación temática a partir de las experiencias reportadas.');
+  box.innerHTML=`<h3>${esc(theme)}</h3><div class="network-pair"><strong>${pairs.length}</strong> vínculo${pairs.length===1?'':'s'} potencial${pairs.length===1?'':'es'} identificado${pairs.length===1?'':'s'} en esta área.</div><div class="network-section"><h4>Organizaciones relacionadas</h4><div class="network-tags">${names.map(r=>`<span class="network-tag">${esc(r.shortName||r.org)} · ${esc(r.country||'')}</span>`).join('')}</div></div>${complementaryLabels.size?`<div class="network-section"><h4>Oportunidades de intercambio</h4><div class="network-tags">${[...complementaryLabels].slice(0,12).map(x=>`<span class="network-tag complement">${esc(x)}</span>`).join('')}</div></div>`:''}${sharedLabels.size?`<div class="network-section"><h4>Coincidencias</h4><div class="network-tags">${[...sharedLabels].slice(0,8).map(x=>`<span class="network-tag shared">${esc(x)}</span>`).join('')}</div></div>`:''}<div class="network-section"><h4>Posibles formas de articulación</h4><ul class="network-collab">${collaboration.map(x=>`<li>${x}</li>`).join('')}</ul></div><div class="network-note"><strong>Lectura:</strong> estas posibilidades se generan a partir de las acciones reportadas. No significan que las organizaciones deban trabajar juntas ni que una acción no reportada sea una ausencia de capacidad.</div>`;
+  return true;
+}
+
+function renderNetwork(){
+  const stage=document.getElementById('networkStage'); if(!stage)return;
+  const records=DB.records;
+  if(records.length<2){
+    stage.innerHTML='<div class="network-empty">La red se activará cuando existan al menos dos organizaciones con información registrada.</div>';
+    networkRenderInfo(null,null);return;
+  }
+  const allPairs=networkBuildPairs();
+  const pairs=allPairs;
+  if(!pairs.length){stage.innerHTML='<div class="network-empty">No se identificaron oportunidades de relación con los datos actualmente registrados.</div>';networkRenderInfo(null,null);return;}
+  const w=1400,h=850;
+  const positions=records.map((r,i)=>networkSvgPosition(i,records.length,w,h));
+  stage.innerHTML=`<svg class="network-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Red de oportunidades de articulación entre organizaciones"></svg>`;
+  const svg=stage.querySelector('svg');
+  svg.addEventListener('click',e=>{
+    if(e.target===svg){
+      window.__networkActiveIndex=null;
+      window.__networkActivePair=null;
+      networkRender();
+      networkRenderInfo(null,null);
+    }
+  });
+  const edgeLayer=document.createElementNS('http://www.w3.org/2000/svg','g');
+  const nodeLayer=document.createElementNS('http://www.w3.org/2000/svg','g');
+  svg.append(edgeLayer,nodeLayer);
+  const activeIndex=window.__networkActiveIndex;
+  const activePair=window.__networkActivePair;
+  const isSelectedPair=(pair)=>activePair && ((pair.i===activePair.i&&pair.j===activePair.j)||(pair.i===activePair.j&&pair.j===activePair.i));
+  pairs.forEach(pair=>{
+    const selected=activeIndex===pair.i||activeIndex===pair.j||isSelectedPair(pair);
+    const x1=positions[pair.i][0], y1=positions[pair.i][1], x2=positions[pair.j][0], y2=positions[pair.j][1];
+    // Línea visible
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+    line.setAttribute('class',`network-edge ${pair.level}${selected?' active':''}`);
+    line.setAttribute('aria-label',`${pair.a.org} y ${pair.b.org}`);
+    // Área de selección invisible y mucho más amplia para facilitar el clic
+    const hit=document.createElementNS('http://www.w3.org/2000/svg','line');
+    hit.setAttribute('x1',x1);hit.setAttribute('y1',y1);hit.setAttribute('x2',x2);hit.setAttribute('y2',y2);
+    hit.setAttribute('class','network-edge-hit');
+    hit.setAttribute('aria-label',`Seleccionar relación entre ${pair.a.org} y ${pair.b.org}`);
+    hit.tabIndex=0;
+    const selectPair=()=>{
+      window.__networkActivePair=pair;
+      window.__networkActiveIndex=null;
+      // Actualiza selección sin reconstruir la red, evitando que desaparezca el reporte.
+      document.querySelectorAll('.network-edge').forEach(el=>el.classList.remove('active'));
+      document.querySelectorAll('.network-node').forEach(el=>{el.classList.remove('active-pair','dim-pair');});
+      line.classList.add('active');
+      document.querySelectorAll('.network-node').forEach((nodeEl,idx)=>{
+        if(idx===pair.i || idx===pair.j) nodeEl.classList.add('active-pair');
+        else nodeEl.classList.add('dim-pair');
+      });
+      networkRenderInfo(pair);
+    };
+    hit.addEventListener('click',selectPair);
+    hit.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPair();}});
+    edgeLayer.appendChild(line);
+    edgeLayer.appendChild(hit);
+  });
+  records.forEach((r,i)=>{
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    const pairSelected=activePair && (i===activePair.i || i===activePair.j);
+    g.setAttribute('class',`network-node ${activeIndex===i?'active':''}${pairSelected?' active-pair':''}`);g.setAttribute('tabindex','0');
+    if(activeIndex!==undefined&&activeIndex!==null&&activeIndex!==i)g.classList.add('dim');
+    if(activePair && !pairSelected)g.classList.add('dim-pair');
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',positions[i][0]);c.setAttribute('cy',positions[i][1]);c.setAttribute('r',72);g.appendChild(c);
+    const displayName=r.shortName||r.org;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',positions[i][0]);t.setAttribute('y',positions[i][1]-3);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','16');t.setAttribute('font-weight','800');t.setAttribute('pointer-events','none');t.textContent=displayName;g.appendChild(t);
+    const country=document.createElementNS('http://www.w3.org/2000/svg','text');country.setAttribute('x',positions[i][0]);country.setAttribute('y',positions[i][1]+17);country.setAttribute('text-anchor','middle');country.setAttribute('class','node-country');country.textContent=r.country||'';g.appendChild(country);
+    const click=()=>{window.__networkActiveIndex=i;window.__networkActivePair=null;document.getElementById('org').value=String(i);renderProfile();renderNetwork();networkRenderInfo(null,null);};
+    g.addEventListener('click',click);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();click();}});
+    nodeLayer.appendChild(g);
+  });
+  if(window.__networkActivePair){
+    const still=pairs.find(p=>p.i===window.__networkActivePair.i&&p.j===window.__networkActivePair.j);
+    if(still) networkRenderInfo(still);
+    else { window.__networkActivePair=null; networkRenderInfo(null,activeIndex); }
+  }else if(activeIndex!==undefined&&activeIndex!==null){
+    networkRenderInfo(null,null);
+  }
+}
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+function unique(field){return [...new Set(DB.records.map(r=>r[field]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));}
+
+function fillFilters(){
+  const org=document.getElementById('org');
+  org.innerHTML='';
+  DB.records.forEach((r,i)=>org.insertAdjacentHTML('beforeend',`<option value="${i}">${esc(r.org)}</option>`));
+
+  const as=document.getElementById('actionSelect');
+  as.innerHTML='<option value="">— Selecciona una acción —</option>';
+  DB.themes.forEach(t=>t.questions.forEach(([qid,qtitle,opts])=>{
+    const og=document.createElement('optgroup'); og.label=t.title+' · '+qtitle;
+    opts.filter(x=>!x[0].endsWith('_texto')).forEach(([variable,label])=>{
+      const o=document.createElement('option');o.value=qid+'||'+label;o.textContent=label;og.appendChild(o);
+    });
+    as.appendChild(og);
+  }));
+}
+
+function filtered(){
+  return DB.records;
+}
+
+let selectedCountry='';
+
+function renderCentralAmericaMap(){
+ const counts={};
+ DB.records.forEach(r=>{if(r.country)counts[r.country]=(counts[r.country]||0)+1;});
+ const selected=selectedCountry;
+ document.querySelectorAll('.map-country').forEach(el=>{
+   const c=el.dataset.country;
+   el.classList.toggle('has-data',!!counts[c]);
+   el.classList.toggle('active',c===selected);
+   el.setAttribute('aria-label',`${c}: ${counts[c]||0} ${counts[c]===1?'organización':'organizaciones'}`);
+   el.setAttribute('tabindex','0');
+ });
+ const positions={
+  "Guatemala":[183,151],"Belice":[270,145],"Honduras":[335,174],
+  "El Salvador":[258,206],"Nicaragua":[387,247],"Costa Rica":[432,304],"Panamá":[553,345]
+ };
+ // Se eliminan los números del mapa para evitar que sigan apareciendo debajo de los nombres.
+ const countsRoot=document.getElementById('mapCounts');
+ countsRoot.innerHTML='';
+ document.querySelectorAll('.map-country').forEach(el=>{
+   const selectPais=()=>{
+     selectedCountry=el.dataset.country;
+     renderCentralAmericaMap();
+     renderMapInfo(selectedCountry);
+     document.querySelector('.map-card')?.scrollIntoView({behavior:'smooth',block:'start'});
+   };
+   el.onclick=selectPais;
+   el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPais();}};
+ });
+ renderMapInfo(selected||null);
+}
+
+function renderMapInfo(country){
+ const title=document.getElementById('mapInfoTitle');
+ const text=document.getElementById('mapInfoText');
+ const box=document.getElementById('mapOrgs');
+ if(!country){
+   title.textContent='Centroamérica';
+   text.textContent='Selecciona un país en el mapa para consultar sus organizaciones.';
+   box.innerHTML='<div class="map-empty">El mapa se actualizará automáticamente a medida que se incorporen organizaciones del CICA.</div>';
+   return;
+ }
+ const list=DB.records.filter(r=>r.country===country);
+ const mapOnly=(MAP_ONLY_ORGS[country]||[]).map(name=>({org:name,scope:'Nombre incorporado al mapa'}));
+ const combined=[...list,...mapOnly];
+ title.textContent=country;
+ if(mapOnly.length && !list.length){
+   text.textContent='Organización incluida en el mapa. No se ha incorporado a la base analítica del tablero.';
+ }else if(mapOnly.length){
+   text.textContent=`${list.length} ${list.length===1?'organización':'organizaciones'} en el mapeo actual y ${mapOnly.length===1?'un nombre adicional':'nombres adicionales'} incluidos únicamente en el mapa.`;
+ }else{
+   text.textContent=`${list.length} ${list.length===1?'organización':'organizaciones'} representada${list.length===1?'':'s'} en el mapeo actual.`;
+ }
+ box.innerHTML=combined.length?combined.map(r=>{
+   const record=DB.records.find(item=>item.org===r.org && item.country===country);
+   const peoples=record?.peoples||'';
+   let names=peoples.replace(/^.*?:\s*/, '').replace(/\.$/, '');
+   let peopleList=[];
+   if(names){
+     peopleList=names.split(/,\s*/);
+     if(peopleList.length>1) peopleList[peopleList.length-1]=peopleList[peopleList.length-1].replace(/\s+y\s+/, ' y ');
+     const last=peopleList[peopleList.length-1];
+     if(peopleList.length>1 && /\s+y\s+/.test(last)){
+       const parts=last.split(/\s+y\s+/);
+       peopleList.splice(peopleList.length-1,1,...parts);
+     }
+   }
+   return `<div class="map-org"><strong>${esc(r.org)}</strong>${r.scope==='Nombre incorporado al mapa'?'<span>Incluida únicamente en el mapa</span>':`<span>${esc(r.scope||'')}</span>`}<div class="peoples-detail">${peopleList.length?`<strong>Pueblos indígenas reportados (${peopleList.length}):</strong><ol>${peopleList.map(name=>`<li>${esc(name)}</li>`).join('')}</ol>`:'No se han incorporado respuestas sobre pueblos indígenas para esta organización en la base del tablero.'}</div></div>`;
+ }).join(''):'<div class="map-empty">Aún no se han registrado organizaciones para este país.</div>';
+}
+
+function renderCountryChart(){
+ const counts={};
+ DB.records.forEach(r=>{if(r.country)counts[r.country]=(counts[r.country]||0)+1;});
+ const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0]));
+ const total=DB.records.length;
+ const chart=document.getElementById('countryChart');
+ if(!entries.length){
+   chart.innerHTML='<div class="empty">Aún no se han cargado datos de organizaciones.</div>';
+   return;
+ }
+ const palette=['#178ABD','#933C28','#F3DD7E','#2B6166','#D3A67B','#263425'];
+ const cx=90,cy=90,radius=70,hole=42;
+ const polar=(angle,r)=>[cx+Math.cos(angle)*r,cy+Math.sin(angle)*r];
+ const arcPath=(start,end)=>{
+   const [x1,y1]=polar(start,radius),[x2,y2]=polar(end,radius);
+   const [hx1,hy1]=polar(end,hole),[hx2,hy2]=polar(start,hole);
+   const large=(end-start)>Math.PI?1:0;
+   return `M ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2} L ${hx1} ${hy1} A ${hole} ${hole} 0 ${large} 0 ${hx2} ${hy2} Z`;
+ };
+ let angle=-Math.PI/2;
+ const segments=entries.map(([country,count],i)=>{
+   const next=angle+(count/total)*Math.PI*2;
+   const pct=(count/total*100).toFixed(1).replace('.0','');
+   const seg={country,count,pct,color:palette[i%palette.length],path:arcPath(angle,next)};
+   angle=next; return seg;
+ });
+ const defaultSeg=segments[0];
+ chart.innerHTML=`
+  <div class="pie-wrap"><svg class="pie-chart" viewBox="0 0 180 180" role="img" aria-label="Gráfico de dona de participación por país">
+   ${segments.map(seg=>`<path class="pie-segment" d="${seg.path}" fill="${seg.color}" data-country="${esc(seg.country)}"><title>${esc(seg.country)} — ${seg.pct}%</title></path>`).join('')}
+   <circle cx="90" cy="90" r="42" fill="white"></circle>
+   <g class="pie-hole"><text id="countryPct" x="90" y="95" text-anchor="middle" class="strong">${defaultSeg.pct}%</text></g>
+  </svg></div>
+  <div class="peoples-stat" aria-label="23 nombres distintos de pueblos indígenas identificados"><strong>23</strong><span>pueblos indígenas identificados</span></div>
+  <div class="country-legend">${segments.map((seg,i)=>`<button type="button" class="country-item" data-index="${i}"><span class="country-dot" style="background:${seg.color}"></span><span class="country-name">${esc(seg.country)}</span></button>`).join('')}</div>`;
+ const pctEl=document.getElementById('countryPct'),nameEl=document.getElementById('countryName');
+ const showPaís=seg=>{pctEl.textContent=`${seg.pct}%`;nameEl.textContent=seg.country;};
+ chart.querySelectorAll('.pie-segment').forEach((el,i)=>{el.addEventListener('mouseenter',()=>showPaís(segments[i]));el.addEventListener('focus',()=>showPaís(segments[i]));el.addEventListener('click',()=>{showPaís(segments[i]);selectedCountry=segments[i].country;renderCentralAmericaMap();renderMapInfo(selectedCountry);});});
+ chart.querySelectorAll('.country-item').forEach((el,i)=>el.addEventListener('click',()=>{showPaís(segments[i]);selectedCountry=segments[i].country;renderCentralAmericaMap();renderMapInfo(selectedCountry);}));
+}
+
+function renderTimeline(){
+  const groups={};
+  DB.records.forEach(r=>{
+    if(r.year!==undefined && r.year!==null && String(r.year).trim()!==''){
+      const y=String(r.year).trim();
+      (groups[y] ||= []).push(r.org);
+    }
+  });
+  const timelineData=Object.entries(groups).sort((a,b)=>Number(a[0])-Number(b[0]));
+  const root=document.getElementById('timeline');
+
+  if(!timelineData.length){
+    root.innerHTML='<div class="empty">La línea de tiempo se irá construyendo a medida que se incorpore el año de creación de cada organización.</div>';
+    return;
+  }
+
+  root.innerHTML=`<div class="timeline-track"></div><div class="timeline-years">${timelineData.map(([year,orgs])=>`
+   <div class="timeline-year">
+    <div class="timeline-year-label">${esc(year)}</div>
+    <button type="button" class="timeline-dot" aria-label="Ver organizaciones creadas en ${esc(year)}"></button>
+    <div class="timeline-orgs">${orgs.map(org=>`<button type="button" class="timeline-org" data-org="${esc(org)}">${esc(org)}</button>`).join('')}</div>
+   </div>`).join('')}</div>`;
+
+  root.querySelectorAll('.timeline-org,.timeline-dot').forEach(el=>{
+   el.addEventListener('click',()=>{
+    const yearBox=el.closest('.timeline-year');
+    const orgBtn=el.classList.contains('timeline-org')?el:null;
+    const target=orgBtn ? orgBtn.dataset.org : yearBox.querySelector('.timeline-org')?.dataset.org;
+    if(target){
+      const index=DB.records.findIndex(r=>r.org===target);
+      if(index>=0){
+        document.getElementById('org').value=String(index);
+        renderProfile();
+        document.getElementById('profile')?.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    }
+   });
+  });
+}
+
+function countOrgActions(r){
+ let n=0;
+ DB.themes.forEach(t=>t.questions.forEach(([qid,qtitle,opts])=>opts.forEach(([variable,label])=>{
+   const value=r.actions?.[qid]?.[label];
+   if(variable.endsWith('_texto')){if(typeof value==='string'&&value.trim())n++;}
+   else if(value===true)n++;
+ })));
+ return n;
+}
+function actionEntries(list){
+ const counts=[];
+ DB.themes.forEach(t=>t.questions.forEach(([qid,qtitle,opts])=>opts.filter(x=>!x[0].endsWith('_texto')).forEach(([variable,label])=>{
+   const count=list.reduce((n,r)=>n+(r.actions?.[qid]?.[label]===true?1:0),0);
+   counts.push({qid,label,count});
+ })));
+ return counts.sort((a,b)=>b.count-a.count||a.label.localeCompare(b.label));
+}
+function renderActionOverview(){
+ const root=document.getElementById('actionOverview'),list=filtered();
+ if(!list.length){root.innerHTML='<div class="empty">No hay organizaciones registradas.</div>';return;}
+ const top=actionEntries(list).slice(0,10),maxAction=Math.max(1,...top.map(x=>x.count)),columns=[top.slice(0,5),top.slice(5,10)];
+ root.innerHTML=`<div class="overview-panel"><h3>Acciones reportadas con mayor frecuencia</h3><p>Número de organizaciones que reportaron cada acción predefinida. Selecciona una acción para ver las organizaciones que la realizan.</p><div class="action-columns">${columns.map(col=>`<div>${col.map(x=>`<button type="button" class="action-rank" data-qid="${esc(x.qid)}" data-label="${esc(x.label)}" title="${esc(x.label)} — ${x.count} organizations"><span class="rank-label">${esc(x.label)}</span><span class="rank-bar-wrap"><span class="rank-bar" style="width:${(x.count/maxAction*100).toFixed(1)}%"></span></span><span class="rank-value">${x.count}</span></button>`).join('')}</div>`).join('')}</div><div class="overview-foot">Se muestran las 10 acciones predefinidas reportadas con mayor frecuencia.</div></div>`;
+ root.querySelectorAll('.action-rank').forEach(btn=>btn.addEventListener('click',()=>{const value=btn.dataset.qid+'||'+btn.dataset.label;const select=document.getElementById('actionSelect');select.value=value;renderDirectory();document.querySelector('.directory')?.scrollIntoView({behavior:'smooth',block:'start'});}));
+}
+function render(){
+  const list=filtered();
+  document.getElementById('stats').innerHTML=`
+   <div class="stat"><b>${list.length}</b><span>organizaciones registradas</span></div>
+   <div class="stat"><b>${new Set(list.map(r=>r.scope)).size}</b><span>alcances territoriales</span></div>
+   <div class="stat"><b>${new Set(list.map(r=>r.type)).size}</b><span>tipos de organización</span></div>
+   <div class="stat"><b>${countActions(list)}</b><span>acciones registradas</span></div>`;
+  renderActionOverview();
+  renderCentralAmericaMap();
+  renderNetwork();
+  if(!list.length){
+    document.getElementById('profile').innerHTML='<div class="empty">Aún no hay organizaciones registradas.</div>';
+    return;
+  }
+  const orgEl=document.getElementById('org');
+  const selectedIndex=Number(orgEl.value||0);
+  const selectedOrg=DB.records[selectedIndex];
+  if(!list.includes(selectedOrg)) orgEl.value=String(DB.records.indexOf(list[0]));
+  renderProfile();
+  renderDirectory();
+}
+function countActions(list){
+ let n=0;list.forEach(r=>DB.themes.forEach(t=>t.questions.forEach(([qid,qtitle,opts])=>opts.forEach(([variable,label])=>{if(!variable.endsWith('_texto')&&r.actions?.[qid]?.[label])n++;}))));
+ return n;
+}
+function renderProfile(){
+ const idx=Number(document.getElementById('org').value),r=DB.records[idx];
+ if(!r){document.getElementById('profile').innerHTML='<div class="empty">Selecciona una organización para consultar su perfil.</div>';return;}
+ const badgeMap={'Women':'Mujeres','Research center':'Centro de investigación','Youth':'Juventud'};
+ let html=`<div class="profile-head"><div><div class="org-name">${esc(r.org)}</div><div class="badges">${Object.entries(badgeMap).filter(([key])=>r.specificity?.[key]).map(([,label])=>`<span class="badge">${esc(label)}</span>`).join('')}${r.specificity?.Otro?`<span class="badge">Otra especificidad</span>`:''}</div></div></div>
+ <div class="meta"><div class="meta-item"><small>País</small><strong>${esc(r.country||'')}</strong></div><div class="meta-item"><small>Alcance territorial</small><strong>${esc(r.scope||'')}</strong></div><div class="meta-item"><small>Tipo de organización</small><strong>${esc(r.type||'')}</strong></div><div class="meta-item"><small>Naturaleza jurídica</small><strong>${esc(r.legal||'')}</strong></div>${r.year?`<div class="meta-item"><small>Año de creación</small><strong>${esc(r.year)}</strong></div>`:''}</div>`;
+ if(r.specificity?.Otro_texto)html+=`<div class="other"><strong>Otra especificidad:</strong> ${esc(r.specificity.Otro_texto)}</div>`;
+ if(r.peoples||r.impact||r.territory||r.registered||r.fund){
+   html+=`<section class="theme"><div class="theme-title">Información complementaria</div><div class="meta">`+
+     (r.peoples?`<div class="meta-item"><small>Pueblos o comunidades representados</small><strong>${esc(r.peoples)}</strong></div>`:'')+
+     (r.impact?`<div class="meta-item"><small>Personas y organizaciones alcanzadas</small><strong>${esc(r.impact)}</strong></div>`:'')+
+     (r.territory?`<div class="meta-item"><small>Territorios o tierras que ayuda a proteger</small><strong>${esc(r.territory)}</strong></div>`:'')+
+     (r.registered?`<div class="meta-item"><small>Registro o personería jurídica</small><strong>${esc(r.registered)}</strong></div>`:'')+
+     (r.fund?`<div class="meta-item"><small>Opera como fondo de subvenciones</small><strong>${esc(r.fund)}</strong></div>`:'')+
+   `</div>`+
+   `<div class="other"><strong>Ecosistemas:</strong> ${Object.entries(r.ecosystems||{}).filter(([,v])=>v).map(([k])=>esc(k)).join(', ')||'No registrado'}</div>`+
+   `<div class="other"><strong>Acceso a información:</strong> ${Object.entries(r.access||{}).filter(([,v])=>v).map(([k])=>esc(k)).join(', ')||'No registrado'}</div></section>`;
+ }
+ DB.themes.forEach(t=>{html+=`<section class="theme"><div class="theme-title">${esc(t.title)}</div>`;
+  t.questions.forEach(([qid,qtitle,opts])=>{html+=`<div class="qblock"><div class="qtitle">${esc(qtitle)}</div><div class="actions">`;
+   opts.filter(x=>!x[0].endsWith('_texto')).forEach(([variable,label])=>{const yes=!!r.actions?.[qid]?.[label];html+=`<span class="action ${yes?'yes':'no'}">${yes?'✓':'○'} ${esc(label)}</span>`;});
+   html+='</div>';const other=opts.find(x=>x[0].endsWith('_texto'));const val=other?r.actions?.[qid]?.[other[1]]:'';if(val)html+=`<div class="other"><strong>Otro:</strong> ${esc(val)}</div>`;html+='</div>';});
+  html+='</section>';
+ });
+ document.getElementById('profile').innerHTML=html;
+}
+function renderDirectory(){
+ const value=document.getElementById('actionSelect').value,box=document.getElementById('directory');
+ if(!value){box.innerHTML='<div class="empty">Selecciona una acción para ver las organizaciones que la realizan.</div>';return;}
+ const [qid,label]=value.split('||'),list=filtered().filter(r=>r.actions?.[qid]?.[label]===true);
+ box.innerHTML=list.length?`<div class="org-list">${list.map(r=>`<div class="org-result"><strong>${esc(r.org)}</strong><span>${esc(r.scope)}</span></div>`).join('')}</div>`:'<div class="empty">Ninguna de las organizaciones registradas reportó esta acción.</div>';
+}
+
+fillFilters();
+if(DB.records.length)document.getElementById('org').value='0';
+renderCountryChart();
+renderTimeline();
+render();
+renderNetwork();
+renderCentralAmericaMap();
+</script>
+<script>
+(function(){
+ function reportDashboardHeight(){
+   var height=Math.max(document.documentElement.scrollHeight,document.body?document.body.scrollHeight:0);
+   window.parent.postMessage({type:'lan-pawanka-dashboard-height',height:height},'*');
+ }
+ window.addEventListener('load',reportDashboardHeight);window.addEventListener('resize',reportDashboardHeight);
+ if(window.ResizeObserver){var observer=new ResizeObserver(reportDashboardHeight);observer.observe(document.documentElement);if(document.body)observer.observe(document.body);}
+ if(window.MutationObserver){var mutations=new MutationObserver(reportDashboardHeight);mutations.observe(document.documentElement,{subtree:true,childList:true,attributes:true,characterData:true});}
+ setTimeout(reportDashboardHeight,250);setTimeout(reportDashboardHeight,900);
+})();
+</script>
+</body>
+</html>
